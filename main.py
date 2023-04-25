@@ -1,11 +1,21 @@
 import discord
-import dotenv
+import json
 import os
 import logging
 from datetime import datetime
 handler = logging.FileHandler(filename='loki.log', encoding='utf-8', mode='w')
-dotenv.load_dotenv()
-token = os.getenv("TOKEN")
+
+if os.path.isfile("cfg/cfg.json"):
+    pass
+else:
+    data = {
+        'TOKEN': input("Your Discord app's auth token: ")
+    }
+    with open("cfg/cfg.json", "w") as confile:
+        json.dump(data, confile)
+with open("cfg/cfg.json", "r") as confile:
+    config = json.load(confile)
+token = config["TOKEN"]
 
 intents = discord.Intents.default()
 intents.message_content = True
