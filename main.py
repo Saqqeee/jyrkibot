@@ -11,7 +11,7 @@ else:
     data = {
         'TOKEN': input("Your Discord app's auth token: ")
     }
-    with open("cfg/cfg.json", "w") as confile:
+    with open("cfg/cfg.json", "w+") as confile:
         json.dump(data, confile)
 with open("cfg/cfg.json", "r") as confile:
     config = json.load(confile)
