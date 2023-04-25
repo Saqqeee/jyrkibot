@@ -32,9 +32,4 @@ async def on_message(msg):
         if aika <= 4 or aika >= 11:
             await msg.channel.send("Mene töihin terv. Jyrki.")
 
-## Sends a picture of Jyrki when requested
-@tree.command(name="jyrki", description="Jyrki")
-async def _jyrki(ctx):
-    await ctx.response.send_message(file=discord.File("media/jyrki.png"))
-
 client.run(token, log_handler=handler)
