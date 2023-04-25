@@ -8,6 +8,8 @@ handler = logging.FileHandler(filename='loki.log', encoding='utf-8', mode='w')
 if os.path.isfile("cfg/cfg.json"):
     pass
 else:
+    if not os.path.exists("cfg"):
+        os.makedirs("cfg")
     data = {
         'TOKEN': input("Your Discord app's auth token: ")
     }
