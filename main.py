@@ -67,4 +67,5 @@ async def on_message(msg):
 async def ping(ctx):
     await ctx.response.send_message(f"Pong! {round(client.latency*1000)} ms")
 
-client.run(token, log_handler=handler)
+if __name__ == "__main__":
+    client.run(token, log_handler=handler)
