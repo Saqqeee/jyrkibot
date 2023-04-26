@@ -2,6 +2,7 @@ import discord
 import json
 import os
 import logging
+import pytz
 from datetime import datetime
 handler = logging.FileHandler(filename='loki.log', encoding='utf-8', mode='w')
 
@@ -40,7 +41,7 @@ async def on_message(msg):
     if msg.author == client.user:
         return
     if msg.content.lower() == "huomenta":
-        aika = datetime.now()
+        aika = datetime.now(pytz.timezone('Europe/Helsinki'))
         if aika.hour <= 4 or aika.hour >= 11:
             await msg.channel.send("Mene töihin terv. Jyrki.")
 
