@@ -30,7 +30,10 @@ else:
 with open("cfg/cfg.json", "r") as confile:
     config = json.load(confile)
 token = config["TOKEN"]
-gld = config["guild"]
+if config["guild"] == None:
+    gld = None
+else:
+    gld = discord.Object(id=config["guild"])
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -57,5 +60,11 @@ async def on_message(msg):
         aika = datetime.now(pytz.timezone('Europe/Helsinki'))
         if aika.hour <= 4 or aika.hour >= 11:
             await msg.channel.send("Mene töihin terv. Jyrki.")
+
+## Test command for checking latency
+## Also acts as a template for future slash commands
+@tree.command(name = "ping", description = "Ping!", guild=gld)
+async def ping(ctx):
+    await ctx.response.send_message(f"Pong! {round(client.latency*1000)} ms")
 
 client.run(token, log_handler=handler)
