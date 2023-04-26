@@ -39,7 +39,7 @@ async def on_ready():
 async def on_message(msg):
     if msg.author == client.user:
         return
-    if msg.content.lower() == "huomenta":
+    if "huomenta" in msg.content.lower():
         aika = datetime.now()
         if aika.hour <= 4 or aika.hour >= 11:
             await msg.channel.send("Mene töihin terv. Jyrki.")
