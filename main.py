@@ -43,6 +43,8 @@ owner = config["owner"]
 rattimes = config["rattimes"]
 
 ## Connect into database or create one if it doesn't already exist
+if not os.path.exists("data"):
+    os.makedirs("data")
 con = sqlite3.connect("data/database.db")
 db = con.cursor()
 ## Create tables if they don't already exist
