@@ -33,7 +33,7 @@ class Huomenta(apc.Group):
         else:
             kerrat = f"{times[0]} kertaa"
         if times == None or times[0] < 1:
-            await ctx.response.send_message("Käyttäjä ei ole ikinä herännyt.")
+            await ctx.response.send_message(f"{user.mention} ei ole ikinä herännyt.")
         elif rats == None or rats[0] < 1:
             await ctx.response.send_message(f"{alku} herännyt {kerrat}, ja aina ihmisten aikoihin.")
         else:
