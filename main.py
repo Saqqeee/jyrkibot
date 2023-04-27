@@ -110,7 +110,7 @@ async def timezone(ctx, timezones: discord.app_commands.Choice[str]):
     db = con.cursor()
     db.execute("INSERT OR IGNORE INTO Users (id, timezone) VALUES (?, ?)", [ctx.user.id, timezones.value])
     db.execute("UPDATE Users SET timezone = ? WHERE id = ?", [timezones.value, ctx.user.id])
-    await ctx.response.send_message(f"{ctx.user.mention}: Time zone changed to {timezones.name}")
+    await ctx.response.send_message(f"{ctx.user.mention}: Aikavyöhykkeeksi vaihdettu {timezones.name}")
     con.commit()
     con.close()
 
