@@ -25,7 +25,7 @@ else:
     data = {
         "TOKEN": input("Your Discord app's auth token: "),
         "guild": None,
-        "owner": input("Your own Discord ID: "),
+        "owner": int(input("Your own Discord ID: ")),
         "rattimes": [4, 11]
     }
     with open("cfg/cfg.json", "w+") as confile:
