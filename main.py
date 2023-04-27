@@ -92,7 +92,7 @@ async def on_message(msg):
 
 ## Test command for checking latency
 ## Also acts as a template for future slash commands
-@tree.command(name = "ping", description = "Ping!", guild=gld)
+@tree.command(name = "ping", description = "Pelaa pöytätennistä Jyrkin kanssa!", guild=gld)
 async def ping(ctx):
     await ctx.response.send_message(f"Pong! {round(client.latency*1000)} ms")
 
