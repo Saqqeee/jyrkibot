@@ -1,5 +1,4 @@
 import discord
-from discord.ext import commands
 import json
 import sqlite3
 from discord import app_commands as apc

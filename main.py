@@ -48,7 +48,8 @@ if not os.path.exists("data"):
 con = sqlite3.connect("data/database.db")
 db = con.cursor()
 ## Create tables if they don't already exist
-db.execute("CREATE TABLE if not exists Huomenet(id INTEGER PRIMARY KEY, uid INTEGER, hour INTEGER)")
+db.execute("CREATE TABLE if not exists Users(id INTEGER PRIMARY KEY, timezone TEXT)")
+db.execute("CREATE TABLE if not exists Huomenet(id INTEGER PRIMARY KEY, uid INTEGER, hour INT)")
 ## Commit changes and close the connection for availability for commands.
 con.commit()
 con.close()
@@ -68,14 +69,6 @@ async def on_ready():
     await tree.sync(guild=gld)
     print("Commands synced")
 
-## Function for logging Huomenta-calls into the database
-def ratlog(author, time):
-    con = sqlite3.connect("data/database.db")
-    db = con.cursor()
-    db.execute("INSERT INTO Huomenet (uid, hour) VALUES (?, ?)", [author, time])
-    con.commit()
-    con.close()
-
 ## Responds with "Go to work regards Jyrki" if
 ## someone wakes up at an unreasonable time. Also
 ## logs these into a database.
@@ -86,16 +79,40 @@ async def on_message(msg):
     if msg.content.lower() == "huomenta":
         ratstart = rattimes[0]
         ratend = rattimes[1]
-        aika = datetime.now(pytz.timezone('Europe/Helsinki'))
+        con = sqlite3.connect("data/database.db")
+        db = con.cursor()
+        db.execute("INSERT OR IGNORE INTO Users (id, timezone) VALUES (?, ?)", [msg.author.id, "Europe/Helsinki"])
+        tz = db.execute("SELECT timezone FROM Users WHERE id=?", [msg.author.id]).fetchone()
+        aika = datetime.now(pytz.timezone(tz[0]))
         if aika.hour <= ratend or aika.hour >= ratstart:
             await msg.channel.send("Mene töihin terv. Jyrki.")
-        ratlog(msg.author.id, aika.hour)
+        db.execute("INSERT INTO Huomenet (uid, hour) VALUES (?, ?)", [msg.author.id, aika.hour])
+        con.commit()
+        con.close()
 
 ## Test command for checking latency
 ## Also acts as a template for future slash commands
 @tree.command(name = "ping", description = "Ping!", guild=gld)
 async def ping(ctx):
     await ctx.response.send_message(f"Pong! {round(client.latency*1000)} ms")
+
+## This allows an user to set their preferred time zone
+@tree.command(name = "timezone", description = "Muuta toiselle aikavyöhykkeelle", guild=gld)
+@discord.app_commands.choices(timezones=[
+    discord.app_commands.Choice(name="Helsinki", value="Europe/Helsinki"),
+    discord.app_commands.Choice(name="Tukholma", value="Europe/Stockholm"),
+    discord.app_commands.Choice(name="Lontoo", value="Europe/London"),
+    discord.app_commands.Choice(name="Tokio", value="Asia/Tokyo"),
+    discord.app_commands.Choice(name="UTC", value="Etc/UTC")
+])
+async def timezone(ctx, timezones: discord.app_commands.Choice[str]):
+    con = sqlite3.connect("data/database.db")
+    db = con.cursor()
+    db.execute("INSERT OR IGNORE INTO Users (id, timezone) VALUES (?, ?)", [ctx.user.id, timezones.value])
+    db.execute("UPDATE Users SET timezone = ? WHERE id = ?", [timezones.value, ctx.user.id])
+    await ctx.response.send_message(f"{ctx.user.mention}: Time zone changed to {timezones.name}")
+    con.commit()
+    con.close()
 
 ## Add commands to command tree
 tree.add_command(huomenta.Huomenta(client), guild=gld)
