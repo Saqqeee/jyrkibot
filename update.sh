@@ -17,3 +17,4 @@ then
     cd "${clone_dir}"/
     "${github}" repo sync
     exec "${python_cmd}" main.py
+fi
