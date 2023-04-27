@@ -118,8 +118,8 @@ async def timezone(ctx, timezones: discord.app_commands.Choice[str]):
 @tree.command(name = "update", guild=gld)
 async def update(ctx):
     if ctx.user.id == owner:
-        subprocess.call("./update.sh")
         await ctx.response.send_message("Jyrki ottaa päikkärit")
+        subprocess.call("./update.sh")
         os._exit(1)
     else:
         await ctx.response.send_message("Jyrki ei nyt tottele sinua")
