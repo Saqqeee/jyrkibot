@@ -4,6 +4,7 @@ import json
 import os
 import logging
 import pytz
+import subprocess
 from slashcommands import huomenta
 from datetime import datetime
 handler = logging.FileHandler(filename='loki.log', encoding='utf-8', mode='w')
@@ -117,8 +118,8 @@ async def timezone(ctx, timezones: discord.app_commands.Choice[str]):
 @tree.command(name = "update", guild=gld)
 async def update(ctx):
     if ctx.user.id == owner:
+        subprocess.call("./update.sh")
         await ctx.response.send_message("Jyrki ottaa päikkärit")
-        os.startfile("start.sh")
         os._exit(1)
     else:
         await ctx.response.send_message("Jyrki ei nyt tottele sinua")
