@@ -114,6 +114,15 @@ async def timezone(ctx, timezones: discord.app_commands.Choice[str]):
     con.commit()
     con.close()
 
+@tree.command(name = "update", guild=gld)
+async def update(ctx):
+    if ctx.user.id == owner:
+        await ctx.response.send_message("Jyrki ottaa päikkärit")
+        os.startfile("start.sh")
+        os._exit(1)
+    else:
+        await ctx.response.send_message("Jyrki ei nyt tottele sinua")
+
 ## Add commands to command tree
 tree.add_command(huomenta.Huomenta(client), guild=gld)
 
