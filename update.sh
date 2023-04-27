@@ -16,4 +16,4 @@ if [[ -d "${clone_dir}" ]]
 then
     cd "${clone_dir}"/
     "${github}" repo sync
-    exec "${python_cmd} main.py
+    exec "${python_cmd}" main.py
