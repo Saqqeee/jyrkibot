@@ -212,7 +212,7 @@ async def update(ctx):
     if ctx.user.id == owner:
         await ctx.response.send_message("Jyrki ottaa päikkärit", ephemeral=True)
         subprocess.Popen("./update.sh")
-        client.close()
+        await client.close()
     else:
         await ctx.response.send_message("Et voi tehdä noin!", ephemeral=True)
 
