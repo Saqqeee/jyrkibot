@@ -6,6 +6,7 @@ import logging
 import pytz
 import subprocess
 import random
+import sys
 from slashcommands import huomenta
 from datetime import datetime, timedelta
 handler = logging.FileHandler(filename='loki.log', encoding='utf-8', mode='w')
@@ -210,8 +211,9 @@ async def timezone(ctx, timezones: discord.app_commands.Choice[str]):
 async def update(ctx):
     if ctx.user.id == owner:
         await ctx.response.send_message("Jyrki ottaa päikkärit", ephemeral=True)
-        subprocess.run("./update.sh")
-        os._exit(1)
+        subprocess.Popen("./update.sh")
+        client.close()
+        sys.exit(0)
     else:
         await ctx.response.send_message("Et voi tehdä noin!", ephemeral=True)
 
