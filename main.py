@@ -210,8 +210,8 @@ async def timezone(ctx, timezones: discord.app_commands.Choice[str]):
 async def update(ctx):
     if ctx.user.id == owner:
         await ctx.response.send_message("Jyrki ottaa päikkärit", ephemeral=True)
-        await client.close()
         subprocess.call("./update.sh")
+        await client.close()
         os._exit(1)
     else:
         await ctx.response.send_message("Et voi tehdä noin!", ephemeral=True)
