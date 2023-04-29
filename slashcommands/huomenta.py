@@ -40,8 +40,8 @@ class Huomenta(apc.Group):
         # Fetch information from database for formatting the response
         con = sqlite3.connect("data/database.db")
         db = con.cursor()
-        times = db.execute("SELECT COUNT(*) FROM Huomenet WHERE uid = ?", [user.id]).fetchone()[0]
-        rats = db.execute("SELECT COUNT(*) FROM Huomenet WHERE uid = ? GROUP BY uid HAVING hour >= ? OR hour <= ?", [user.id, rattimes[0], rattimes[1]]).fetchone()[0]
+        times = db.execute("SELECT COUNT(*) FROM Huomenet WHERE uid = ?", [user.id]).fetchone()
+        rats = db.execute("SELECT COUNT(*) FROM Huomenet WHERE uid = ? GROUP BY uid HAVING hour >= ? OR hour <= ?", [user.id, rattimes[0], rattimes[1]]).fetchone()
         userresponses = db.execute("SELECT foundlist, rarelist, ultralist FROM HuomentaUserStats WHERE id=?", [user.id]).fetchone()
         morosfound = len(list(json.loads(userresponses[0]))) if userresponses[0] is not None else 0
         raresfound = len(list(json.loads(userresponses[1]))) if userresponses[1] is not None else 0
@@ -52,16 +52,16 @@ class Huomenta(apc.Group):
 
         huomentastats = f"Tavallisia huomenia {morosfound}/{morototal}\nHarvinaisia huomenia {raresfound}/{raretotal}\nULTRA-harvinaisia huomenia {ultrasfound}/{ultratotal}"
 
-        if times == 1:
+        if times[0] == 1:
             kerrat = f"kerran"
-        else:
-            kerrat = f"{times} kertaa"
-        if times == None or times < 1:
+        elif times[0] > 1:
+            kerrat = f"{times[0]} kertaa"
+        if times[0] == None or times[0] < 1:
             embed.add_field(name="Herätykset", value=f"{user.name} ei ole koskaan herännyt.", inline=False)
-        elif rats == None or rats < 1:
+        elif rats[0] == None or rats[0] < 1:
             embed.add_field(name="Herätykset", value=f"Herätty {kerrat} ja aina ihmisten aikoihin!", inline=False)
         else:
-            embed.add_field(name="Herätykset", value=f"Herätty {kerrat}, joista {rats} täysin rottamaiseen aikaan!", inline=False)
+            embed.add_field(name="Herätykset", value=f"Herätty {kerrat}, joista {rats[0]} täysin rottamaiseen aikaan!", inline=False)
         embed.add_field(name="Jyrkin vastaukset", value=huomentastats, inline=False)
         await ctx.response.send_message(embed=embed)
         con.close()

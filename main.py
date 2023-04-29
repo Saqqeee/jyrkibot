@@ -130,13 +130,10 @@ async def on_message(msg):
         if random.randint(1,ultrararechance) == 1:
             rarity = 2
             rat = 0
-            listtoget = "ultralist"
         elif random.randint(1,rarechance) == 1:
             rarity = 1
-            listtoget = "rarelist"
         else:
             rarity = 0
-            listtoget = "foundlist"
         # Rat check. Ultra rares override this
         if (hour <= ratend or hour >= ratstart) and rarity != 2:
             rat = 1
@@ -144,7 +141,12 @@ async def on_message(msg):
             rat = 0
 
         # Check list of current responses for user
-        userresponses = db.execute("SELECT ? FROM HuomentaUserStats WHERE id=?", [listtoget, msg.author.id]).fetchone()
+        if rarity == 2:
+            userresponses = db.execute("SELECT ultralist FROM HuomentaUserStats WHERE id=?", [msg.author.id]).fetchone()
+        elif rarity == 1:
+            userresponses = db.execute("SELECT rarelist FROM HuomentaUserStats WHERE id=?", [msg.author.id]).fetchone()
+        else:
+            userresponses = db.execute("SELECT foundlist FROM HuomentaUserStats WHERE id=?", [msg.author.id]).fetchone()
         if userresponses != None:
             foundlist = list(json.loads(userresponses[0]))
         else:
