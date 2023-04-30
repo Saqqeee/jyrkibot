@@ -135,7 +135,7 @@ async def on_message(msg):
         else:
             rarity = 0
         # Rat check. Ultra rares override this
-        if (hour <= ratend or hour >= ratstart) and rarity != 2:
+        if (hour < ratend or hour >= ratstart) and rarity != 2:
             rat = 1
         else:
             rat = 0
