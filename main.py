@@ -172,7 +172,7 @@ async def on_message(msg):
         else:
             rarenotif = ""
         await msg.channel.send(rarenotif + respmsg + rarenotif)
-        db.execute("INSERT INTO Huomenet (uid, hour) VALUES (?, ?)", [msg.author.id, aika.hour])
+        db.execute("INSERT INTO Huomenet (uid, hour) VALUES (?, ?)", [msg.author.id, hour])
         db.execute("INSERT OR IGNORE INTO HuomentaUserStats(id) VALUES (?)", [msg.author.id])
         if rarity == 0:
             db.execute("UPDATE HuomentaUserStats SET foundlist=?, lastdate=? WHERE id=?", [foundlist, aika, msg.author.id])
