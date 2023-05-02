@@ -56,9 +56,9 @@ class Huomenta(apc.Group):
             kerrat = f"kerran"
         elif times[0] > 1:
             kerrat = f"{times[0]} kertaa"
-        if times[0] == None or times[0] < 1:
+        if times == None or times[0] < 1:
             embed.add_field(name="Herätykset", value=f"{user.name} ei ole koskaan herännyt.", inline=False)
-        elif rats[0] == None or rats[0] < 1:
+        elif rats == None or rats[0] < 1:
             embed.add_field(name="Herätykset", value=f"Herätty {kerrat} ja aina ihmisten aikoihin!", inline=False)
         else:
             embed.add_field(name="Herätykset", value=f"Herätty {kerrat}, joista {rats[0]} täysin rottamaiseen aikaan!", inline=False)
