@@ -38,7 +38,7 @@ with open("cfg/cfg.json", "r") as confile:
 
 # Check again if any rows are missing and insert defaults if so
 defaults = {
-        "rattimes": [4, 11],
+        "rattimes": [11, 4],
         "huomentacooldown": 12,
         "ultrararechance": 1000,
         "rarechance": 100
