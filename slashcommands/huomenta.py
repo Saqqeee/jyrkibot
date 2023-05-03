@@ -41,7 +41,6 @@ class Huomenta(apc.Group):
         con = sqlite3.connect("data/database.db")
         db = con.cursor()
         userexists = db.execute("SELECT EXISTS(SELECT * FROM Users WHERE id=?)", [user.id]).fetchone()[0]
-        print(userexists)
         if not userexists:
             await ctx.response.send_message("Käyttäjää ei löydetty", ephemeral=True)
             return
