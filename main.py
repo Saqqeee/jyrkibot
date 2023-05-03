@@ -215,6 +215,7 @@ async def update(ctx):
         await ctx.response.send_message("Jyrki ottaa päikkärit", ephemeral=True)
         subprocess.Popen("./update.sh")
         await client.close()
+        sys.exit(0)
     else:
         await ctx.response.send_message("Et voi tehdä noin!", ephemeral=True)
 
