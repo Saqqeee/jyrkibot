@@ -43,6 +43,7 @@ class Huomenta(apc.Group):
         userexists = db.execute("SELECT EXISTS(SELECT * FROM Users WHERE id=?)", [user.id]).fetchone()[0]
         if not userexists:
             await ctx.response.send_message("Käyttäjää ei löydetty", ephemeral=True)
+            con.close()
             return
         times = db.execute("SELECT COUNT(*) FROM Huomenet WHERE uid = ?", [user.id]).fetchone()
         rats = db.execute("SELECT COUNT(hour) FROM Huomenet WHERE uid = ? AND (hour >= ? OR hour < ?)", [user.id, rattimes[0]-1, rattimes[1]]).fetchone()
