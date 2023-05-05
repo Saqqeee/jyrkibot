@@ -29,13 +29,18 @@ class Huomenta(apc.Group):
         self.client = client
 
     @apc.command(name = "stats", description = "Näytä omat tai jonkun muun huomenet.")
-    async def stats(self, ctx, user: discord.Member = None):
+    @apc.choices(hidden=[
+        apc.Choice(name="True", value=1)
+    ])
+    async def stats(self, ctx, user: discord.Member = None, hidden: apc.Choice[int] = None):
         if user == None:
             user = ctx.user
         embed = discord.Embed(
             title=f"Huomenta-tilastot käyttäjälle {user.display_name}:",
             color=discord.Color.dark_magenta()
         )
+
+        hidden = True if hidden != None else False
 
         # Fetch information from database for formatting the response
         con = sqlite3.connect("data/database.db")
@@ -46,7 +51,7 @@ class Huomenta(apc.Group):
             con.close()
             return
         times = db.execute("SELECT COUNT(*) FROM Huomenet WHERE uid = ?", [user.id]).fetchone()
-        rats = db.execute("SELECT COUNT(hour) FROM Huomenet WHERE uid = ? AND (hour >= ? OR hour < ?)", [user.id, rattimes[0]-1, rattimes[1]]).fetchone()
+        rats = db.execute("SELECT COUNT(hour) FROM Huomenet WHERE uid = ? AND (hour >= ? OR hour < ?)", [user.id, rattimes[0], rattimes[1]]).fetchone()
         userresponses = db.execute("SELECT foundlist, rarelist, ultralist FROM HuomentaUserStats WHERE id=?", [user.id]).fetchone()
         morosfound = len(list(json.loads(userresponses[0]))) if userresponses[0] is not None else 0
         raresfound = len(list(json.loads(userresponses[1]))) if userresponses[1] is not None else 0
@@ -68,7 +73,7 @@ class Huomenta(apc.Group):
         else:
             embed.add_field(name="Herätykset", value=f"Herätty {kerrat}, joista {rats[0]} täysin rottamaiseen aikaan!", inline=False)
         embed.add_field(name="Jyrkin vastaukset", value=huomentastats, inline=False)
-        await ctx.response.send_message(embed=embed)
+        await ctx.response.send_message(embed=embed, ephemeral=hidden)
         con.close()
     
     @apc.command(name = "leaderboard", description = "Kuka on herännyt eniten!")
@@ -92,15 +97,15 @@ class Huomenta(apc.Group):
 
     
     @apc.command(name = "add", description = "Owner only command")
-    @discord.app_commands.choices(rarity=[
-        discord.app_commands.Choice(name="Normal", value=0),
-        discord.app_commands.Choice(name="Rare", value=1),
-        discord.app_commands.Choice(name="Ultra rare", value=2)
+    @apc.choices(rarity=[
+        apc.Choice(name="Normal", value=0),
+        apc.Choice(name="Rare", value=1),
+        apc.Choice(name="Ultra rare", value=2)
     ], ratness=[
-        discord.app_commands.Choice(name="Lammas", value=0),
-        discord.app_commands.Choice(name="Rotta", value=1)
+        apc.Choice(name="Lammas", value=0),
+        apc.Choice(name="Rotta", value=1)
     ])
-    async def addresponse(self, ctx, response: str, rarity: discord.app_commands.Choice[int], ratness: discord.app_commands.Choice[int]):
+    async def addresponse(self, ctx, response: str, rarity: apc.Choice[int], ratness: apc.Choice[int]):
         if ctx.user.id == owner:
             con = sqlite3.connect("data/database.db")
             db = con.cursor()
