@@ -67,12 +67,13 @@ class Huomenta(apc.Group):
         elif times[0] > 1:
             kerrat = f"{times[0]} kertaa"
         if times == None or times[0] < 1:
-            embed.add_field(name="Herätykset", value=f"{user.name} ei ole koskaan herännyt.", inline=False)
+            embed.add_field(name="Herätykset", value=f"{user.display_name} ei ole koskaan herännyt.", inline=False)
         elif rats == None or rats[0] < 1:
             embed.add_field(name="Herätykset", value=f"Herätty {kerrat} ja aina ihmisten aikoihin!", inline=False)
         else:
             embed.add_field(name="Herätykset", value=f"Herätty {kerrat}, joista {rats[0]} täysin rottamaiseen aikaan!", inline=False)
         embed.add_field(name="Jyrkin vastaukset", value=huomentastats, inline=False)
+        embed.set_thumbnail(url=user.display_avatar)
         await ctx.response.send_message(embed=embed, ephemeral=hidden)
         con.close()
     
