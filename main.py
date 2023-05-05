@@ -209,11 +209,10 @@ async def timezone(ctx, timezones: discord.app_commands.Choice[str]):
 
 @tree.command(name = "c7ck", guild=gld)
 async def cock(ctx, user: discord.Member = None):
-    if user == None:
-        random.seed(ctx.user.id)
+    random.seed(ctx.user.id if not user else user.id)
+    if user == None or user == ctx.user:
         await ctx.response.send_message(f"Munasi on {random.randint(1,30)} cm pitkä.")
     else:
-        random.seed(user.id)
         await ctx.response.send_message(f"Käyttäjän {user.display_name} muna on {random.randint(1,30)} cm pitkä.")
 
 # If this command is called by the owner set in cfg.json,
