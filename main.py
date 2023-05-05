@@ -207,7 +207,7 @@ async def timezone(ctx, timezones: discord.app_commands.Choice[str]):
     con.commit()
     con.close()
 
-@tree.command(name = "C7CK", guild=gld)
+@tree.command(name = "c7ck", guild=gld)
 async def cock(ctx, user: discord.Member = None):
     if user == None:
         await ctx.response.send_message(f"Munasi on {random.randint(1,30)} cm pitkä.")
