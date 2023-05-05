@@ -212,7 +212,7 @@ async def cock(ctx, user: discord.Member = None):
     if user == None:
         await ctx.response.send_message(f"Munasi on {random.randint(1,30)} cm pitkä.")
     else:
-        await ctx.response.send_message(f"Käyttäjän {user.display_name} muna on {random.randint(1,30)} cm pitkä.")
+        await ctx.response.send_message(f"Käyttäjän {user.display_name} muna on {random.randint(1,30) if user.id != owner else 30} cm pitkä.")
 
 # If this command is called by the owner set in cfg.json,
 # run a script that syncs the repo with origin and restarts the bot
