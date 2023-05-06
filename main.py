@@ -106,7 +106,7 @@ async def on_ready():
 # logs these into a database.
 @client.event
 async def on_message(msg):
-    if msg.author == client.user:
+    if msg.author == client.user or msg.author.bot:
         return
     if msg.content.lower() == "huomenta":
         # Connect to database and create new user if id is not found, also setting a default time zone
