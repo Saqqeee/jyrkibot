@@ -39,7 +39,7 @@ async def timezone(ctx, timezones: discord.app_commands.Choice[str]):
 @apc.command(name = "c7ck")
 async def cock(ctx, user: discord.Member = None):
     random.seed(ctx.user.id if not user else user.id)
-    cocklength = f"{random.randint(1,30)}.{random.randint(0,9)}"
+    cocklength = f"{round(random.uniform(1,30),1)}"
     if user == None or user == ctx.user:
         await ctx.response.send_message(f"Munasi on {cocklength} cm pitkä.")
     else:
