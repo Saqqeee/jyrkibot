@@ -7,7 +7,7 @@ import pytz
 import subprocess
 import random
 import sys
-from slashcommands import huomenta
+from slashcommands import huomenta, utils, lottery
 from datetime import datetime, timedelta
 handler = logging.FileHandler(filename='loki.log', encoding='utf-8', mode='w')
 
@@ -78,6 +78,7 @@ db.execute("CREATE TABLE if not exists Users(id INTEGER PRIMARY KEY, timezone TE
 db.execute("CREATE TABLE if not exists Huomenet(id INTEGER PRIMARY KEY, uid INTEGER, hour INTEGER)")
 db.execute("CREATE TABLE if not exists HuomentaResponses(id INTEGER PRIMARY KEY, response TEXT UNIQUE, rarity INTEGER, rat INTEGER)")
 db.execute("CREATE TABLE if not exists HuomentaUserStats(id INTEGER PRIMARY KEY, foundlist TEXT, rarelist TEXT, ultralist TEXT, lastdate TEXT)")
+db.execute("CREATE TABLE if not exists LotteryPlayers(id INTEGER PRIMARY KEY, credits INTEGER)")
 # If table HuomentaResponses is empty, populate it
 responseamount = db.execute("SELECT COUNT(*) FROM HuomentaResponses").fetchone()[0]
 if responseamount == 0:
@@ -183,38 +184,6 @@ async def on_message(msg):
         con.commit()
         con.close()
 
-# Test command for checking latency
-# Also acts as a template for future slash commands
-@tree.command(name = "ping", description = "Pelaa pöytätennistä Jyrkin kanssa!", guild=gld)
-async def ping(ctx):
-    await ctx.response.send_message(f"Pong! {round(client.latency*1000)} ms", ephemeral=True)
-
-# This allows an user to set their preferred time zone
-@tree.command(name = "timezone", description = "Muuta toiselle aikavyöhykkeelle", guild=gld)
-@discord.app_commands.choices(timezones=[
-    discord.app_commands.Choice(name="Helsinki", value="Europe/Helsinki"),
-    discord.app_commands.Choice(name="Tukholma", value="Europe/Stockholm"),
-    discord.app_commands.Choice(name="Lontoo", value="Europe/London"),
-    discord.app_commands.Choice(name="Tokio", value="Asia/Tokyo"),
-    discord.app_commands.Choice(name="UTC", value="Etc/UTC")
-])
-async def timezone(ctx, timezones: discord.app_commands.Choice[str]):
-    con = sqlite3.connect("data/database.db")
-    db = con.cursor()
-    db.execute("INSERT OR IGNORE INTO Users (id, timezone) VALUES (?, ?)", [ctx.user.id, timezones.value])
-    db.execute("UPDATE Users SET timezone = ? WHERE id = ?", [timezones.value, ctx.user.id])
-    await ctx.response.send_message(f"{ctx.user.mention}: Aikavyöhykkeeksi vaihdettu {timezones.name}", ephemeral=True)
-    con.commit()
-    con.close()
-
-@tree.command(name = "c7ck", guild=gld)
-async def cock(ctx, user: discord.Member = None):
-    random.seed(ctx.user.id if not user else user.id)
-    if user == None or user == ctx.user:
-        await ctx.response.send_message(f"Munasi on {random.randint(1,30)} cm pitkä.")
-    else:
-        await ctx.response.send_message(f"Käyttäjän {user.display_name} muna on {random.randint(1,30)} cm pitkä.")
-
 # If this command is called by the owner set in cfg.json,
 # run a script that syncs the repo with origin and restarts the bot
 @tree.command(name = "update", description = "Owner only command", guild=gld)
@@ -227,18 +196,18 @@ async def update(ctx):
     else:
         await ctx.response.send_message("Et voi tehdä noin!", ephemeral=True)
 
-@tree.command(name = "roleinfo", description = "Näytä roolin tiedot", guild=gld)
-async def gpmems(ctx, role: discord.Role):
-    members = ", ".join(x.display_name for x in role.members)
-    embed = discord.Embed(
-        color = role.color,
-        title = role.name
-    )
-    embed.add_field(name="Jäsenet", value=members)
-    await ctx.response.send_message(embed=embed)
+# Test command for checking latency
+# Also acts as a template for future slash commands
+@tree.command(name = "ping", description = "Pelaa pöytätennistä Jyrkin kanssa!")
+async def ping(ctx):
+    await ctx.response.send_message(f"Pong! {round(client.latency*1000)} ms", ephemeral=True)
 
 # Add commands to command tree
 tree.add_command(huomenta.Huomenta(client), guild=gld)
+#tree.add_command(lottery.Lottery(client), guild=gld)
+tree.add_command(utils.cock, guild=gld)
+tree.add_command(utils.gpmems, guild=gld)
+tree.add_command(utils.timezone, guild=gld)
 
 if __name__ == "__main__":
     client.run(token, log_handler=handler)
