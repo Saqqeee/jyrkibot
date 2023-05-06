@@ -7,7 +7,6 @@ import pytz
 import subprocess
 import random
 import sys
-from slashcommands import huomenta, utils, lottery
 from datetime import datetime, timedelta
 handler = logging.FileHandler(filename='loki.log', encoding='utf-8', mode='w')
 
@@ -64,6 +63,8 @@ ratend = config["rattimes"][1]
 huomentacooldown = config["huomentacooldown"]
 ultrararechance = config["ultrararechance"]
 rarechance = config["rarechance"]
+
+from slashcommands import huomenta, utils, lottery
 
 # Load defaults for populating an empty HuomentaResponses table
 with open("slashcommands/huomenta.json", "r", encoding="utf-8") as hfile:
