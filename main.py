@@ -239,7 +239,7 @@ tree.add_command(huomenta.Huomenta(client), guild=gld)
 async def clrcoms(ctx):
     if ctx.user.id == owner:
         tree.clear_commands(guild=ctx.guild)
-        await tree.sync(guild=ctx.guild.id)
+        await tree.sync(guild=ctx.guild)
         await ctx.response.send_message("Commands cleared", ephemeral=True)
 
 if __name__ == "__main__":
