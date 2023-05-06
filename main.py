@@ -227,6 +227,11 @@ async def update(ctx):
     else:
         await ctx.response.send_message("Et voi tehdä noin!", ephemeral=True)
 
+@tree.command(name = "rolemembers", description = "Näytä jäsenet joilla on tämä rooli", guild=gld)
+async def gpmems(ctx, role: discord.Role):
+    string = ", ".join(x.display_name for x in role.members)
+    await ctx.response.send_message(string)
+
 # Add commands to command tree
 tree.add_command(huomenta.Huomenta(client), guild=gld)
 
