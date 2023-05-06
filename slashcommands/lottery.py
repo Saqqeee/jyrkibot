@@ -125,7 +125,7 @@ class Lottery(apc.Group):
             await ctx.response.send_message("Et voi tehdä noin!", ephemeral=True)
 
     @apc.command(name = "prizepool", description = "Palkintopotti")
-    @apc.checks.cooldown(1, 60)
+    @apc.checks.cooldown(1, 60, key=lambda i: (i.guild_id))
     async def showpool(self, ctx: discord.Interaction):
         con = sqlite3.connect("data/database.db")
         db = con.cursor()
