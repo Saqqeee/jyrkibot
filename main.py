@@ -41,7 +41,8 @@ defaults = {
         "rattimes": [11, 4],
         "huomentacooldown": 12,
         "ultrararechance": 1000,
-        "rarechance": 100
+        "rarechance": 100,
+        "lotterychannel": None
     }
 changes = False
 for key, value in defaults.items():
@@ -79,6 +80,9 @@ db.execute("CREATE TABLE if not exists Huomenet(id INTEGER PRIMARY KEY, uid INTE
 db.execute("CREATE TABLE if not exists HuomentaResponses(id INTEGER PRIMARY KEY, response TEXT UNIQUE, rarity INTEGER, rat INTEGER)")
 db.execute("CREATE TABLE if not exists HuomentaUserStats(id INTEGER PRIMARY KEY, foundlist TEXT, rarelist TEXT, ultralist TEXT, lastdate TEXT)")
 db.execute("CREATE TABLE if not exists LotteryPlayers(id INTEGER PRIMARY KEY, credits INTEGER)")
+db.execute("CREATE TABLE if not exists LotteryBets(id INTEGER PRIMARY KEY, uid INTEGER, roundid INTEGER, row TEXT)")
+db.execute("CREATE TABLE if not exists LotteryWins(id INTEGER PRIMARY KEY, uid INTEGER, roundid INTEGER, payout INTEGER, date TEXT)")
+db.execute("CREATE TABLE if not exists CurrentLottery(id INTEGER PRIMARY KEY, pool INTEGER, startdate TEXT)")
 # If table HuomentaResponses is empty, populate it
 responseamount = db.execute("SELECT COUNT(*) FROM HuomentaResponses").fetchone()[0]
 if responseamount == 0:
@@ -101,6 +105,9 @@ async def on_ready():
     print(f'We have logged in as {client.user}')
     await tree.sync(guild=gld)
     print("Commands synced")
+    from jobs import jobs
+    await jobs.startjobs(client)
+    print("Tasks started")
 
 # Responds with something from the Huomenta list if
 # someone wakes up at an unreasonable time. Also
@@ -130,16 +137,23 @@ async def on_message(msg):
         # Check for ultra rares and regular rares
         if random.randint(1,ultrararechance) == 1:
             rarity = 2
+            rarenotif = ":star:"*3
             rat = 0
+            earn = 50
         elif random.randint(1,rarechance) == 1:
             rarity = 1
+            rarenotif = ":star:"
+            earn = 5
         else:
             rarity = 0
+            rarenotif = ""
+            earn = 1
         # Rat check. Ultra rares override this
         if (hour < ratend or hour >= ratstart) and rarity != 2:
             rat = 1
         else:
             rat = 0
+            earn = earn*2
 
         # Check list of current responses for user
         if rarity == 2:
@@ -165,13 +179,7 @@ async def on_message(msg):
             foundlist.sort()
         foundlist = json.dumps(foundlist)
 
-        # Decorate the message if a rare is found
-        if rarity == 1:
-            rarenotif = ":star:"
-        elif rarity == 2:
-            rarenotif = ":star:"*3
-        else:
-            rarenotif = ""
+        # Send response and save stuff into databases
         await msg.channel.send(rarenotif + respmsg + rarenotif)
         db.execute("INSERT INTO Huomenet (uid, hour) VALUES (?, ?)", [msg.author.id, hour])
         db.execute("INSERT OR IGNORE INTO HuomentaUserStats(id) VALUES (?)", [msg.author.id])
@@ -181,6 +189,8 @@ async def on_message(msg):
             db.execute("UPDATE HuomentaUserStats SET rarelist=?, lastdate=? WHERE id=?", [foundlist, aika, msg.author.id])
         elif rarity == 2:
             db.execute("UPDATE HuomentaUserStats SET ultralist=?, lastdate=? WHERE id=?", [foundlist, aika, msg.author.id])
+        db.execute("INSERT OR IGNORE INTO LotteryPlayers(id, credits) VALUES (?, 0)", [msg.author.id])
+        db.execute("UPDATE LotteryPlayers SET credits=credits+? WHERE id=?", [earn, msg.author.id])
         con.commit()
         con.close()
 
@@ -198,13 +208,13 @@ async def update(ctx):
 
 # Test command for checking latency
 # Also acts as a template for future slash commands
-@tree.command(name = "ping", description = "Pelaa pöytätennistä Jyrkin kanssa!")
+@tree.command(name = "ping", description = "Pelaa pöytätennistä Jyrkin kanssa!", guild=gld)
 async def ping(ctx):
     await ctx.response.send_message(f"Pong! {round(client.latency*1000)} ms", ephemeral=True)
 
 # Add commands to command tree
 tree.add_command(huomenta.Huomenta(client), guild=gld)
-#tree.add_command(lottery.Lottery(client), guild=gld)
+tree.add_command(lottery.Lottery(client), guild=gld)
 tree.add_command(utils.cock, guild=gld)
 tree.add_command(utils.gpmems, guild=gld)
 tree.add_command(utils.timezone, guild=gld)
