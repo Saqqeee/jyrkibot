@@ -235,7 +235,7 @@ async def gpmems(ctx, role: discord.Role):
 # Add commands to command tree
 tree.add_command(huomenta.Huomenta(client), guild=gld)
 
-@tree.command(name="clrcoms")
+@tree.command(name = "clrcoms", description = "Clear commands from current guild", guild=gld)
 async def clrcoms(ctx):
     if ctx.user.id == owner:
         tree.clear_commands(guild=ctx.guild)
