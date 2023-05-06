@@ -52,7 +52,7 @@ def calculatewinnings(amount: int):
     return (math.comb(25, amount) - math.comb(25, amount-1))/math.comb(25, 7)
 
 async def draw(date: datetime, client: discord.Client):
-    channel = client.get_partial_messageable(lotterychannel)
+    channel = client.get_channel(lotterychannel)
     con = sqlite3.connect("data/database.db")
     db = con.cursor()
     startdate = db.execute("SELECT startdate FROM CurrentLottery").fetchone()
@@ -68,7 +68,6 @@ async def draw(date: datetime, client: discord.Client):
     round, pool = db.execute("SELECT id, pool FROM CurrentLottery").fetchone()
     bets = db.execute("SELECT uid, row FROM LotteryBets WHERE roundid = ?", [round]).fetchall()
     winrow = random.sample([*range(1,25)], k=7)
-    print(winrow)
     winners = {
         1: [],
         2: [],
@@ -80,6 +79,7 @@ async def draw(date: datetime, client: discord.Client):
     }
 
     shares = [0]
+    parhaat = []
     for user in bets:
         correctamount = 0
         for x in json.loads(user[1]):
@@ -87,6 +87,7 @@ async def draw(date: datetime, client: discord.Client):
                 correctamount += 1
         if correctamount > 0:
             winners[correctamount].append([user[0]])
+            parhaat.append([user[0], correctamount])
     for key, value in winners.items():
         shares.append(math.floor(calculatewinnings(key))*pool)
         for mies in value:
@@ -95,9 +96,25 @@ async def draw(date: datetime, client: discord.Client):
     for x in shares:
         pool -= x
     db.execute("UPDATE CurrentLottery SET id=id+1, pool=?, startdate=?", [pool, datetime.now()])
+
+    embed = discord.Embed(
+        title="Kierroksen voittajat",
+        color=discord.Color.dark_magenta()
+    )
+    def sortink(e):
+        return e[1]
+    parhaat.sort(reverse=True, key=sortink)
+    i = 0
+    for mies in parhaat:
+        i += 1
+        if i > 5:
+            break
+        member = discord.utils.get(channel.guild.members, id=mies[0])
+        embed.add_field(name=f"**{i}.** {member.display_name}", value=f"{mies[1]} oikein")
+
     con.commit()
     con.close()
-    await channel.send(content="Arvonnat suoritettu! Nähdään huomenna samaan aikaan.")
+    await channel.send(content="Arvonnat suoritettu! Nähdään huomenna samaan aikaan.", embed=embed)
 
 class Lottery(apc.Group):
     def __init__(self, client):

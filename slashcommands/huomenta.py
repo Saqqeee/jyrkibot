@@ -32,7 +32,7 @@ class Huomenta(apc.Group):
     @apc.choices(hidden=[
         apc.Choice(name="True", value=1)
     ])
-    async def stats(self, ctx, user: discord.Member = None, hidden: apc.Choice[int] = None):
+    async def stats(self, ctx: discord.Interaction, user: discord.Member = None, hidden: apc.Choice[int] = None):
         if user == None:
             user = ctx.user
         embed = discord.Embed(
@@ -78,7 +78,7 @@ class Huomenta(apc.Group):
         con.close()
     
     @apc.command(name = "leaderboard", description = "Kuka on herännyt eniten!")
-    async def leaderboard(self, ctx):
+    async def leaderboard(self, ctx: discord.Interaction):
         con = sqlite3.connect("data/database.db")
         db = con.cursor()
         leaders = db.execute("SELECT uid, COUNT(hour) FROM Huomenet GROUP BY uid ORDER BY COUNT(hour) DESC LIMIT 5").fetchall()
@@ -106,7 +106,7 @@ class Huomenta(apc.Group):
         apc.Choice(name="Lammas", value=0),
         apc.Choice(name="Rotta", value=1)
     ])
-    async def addresponse(self, ctx, response: str, rarity: apc.Choice[int], ratness: apc.Choice[int]):
+    async def addresponse(self, ctx: discord.Interaction, response: str, rarity: apc.Choice[int], ratness: apc.Choice[int]):
         if ctx.user.id == owner:
             con = sqlite3.connect("data/database.db")
             db = con.cursor()
