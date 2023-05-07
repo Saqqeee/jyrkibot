@@ -92,7 +92,7 @@ async def draw(date: datetime, client: discord.Client):
             winners[correctamount].append([user[0]])
             parhaat.append([user[0], correctamount])
     for key, value in winners.items():
-        shares.append(math.floor(calculatewinnings(key))*pool)
+        shares.append(math.floor(calculatewinnings(key)*pool))
         for mies in value:
             db.execute("INSERT INTO LotteryWins(uid, roundid, payout, date) VALUES (?,?,?,?)", [mies[0], round, math.floor(shares[key]/len(value)), date])
             db.execute("UPDATE LotteryPlayers SET credits = credits + ? WHERE id = ?", [math.floor(shares[key]/len(value)), mies[0]])
