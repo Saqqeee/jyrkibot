@@ -1,8 +1,7 @@
 import threading
 import asyncio
 from datetime import datetime
-from slashcommands import lottery
-from jobs.tasks import calculate_bacs
+from jobs.tasks import calculate_bacs, lotterydraw
 
 async def tasks(client):
     timer = 0
@@ -10,7 +9,7 @@ async def tasks(client):
         date = datetime.now()
         
         # Once per minute
-        await lottery.draw(date, client)
+        await lotterydraw.draw(date, client)
 
         # Once per six minutes
         if timer%6==0:
