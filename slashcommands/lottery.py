@@ -70,6 +70,10 @@ async def draw(date: datetime, client: discord.Client):
         return
     round, pool = db.execute("SELECT id, pool FROM CurrentLottery").fetchone()
     bets = db.execute("SELECT uid, row FROM LotteryBets WHERE roundid = ?", [round]).fetchall()
+    if len(bets)==0:
+        db.execute("UPDATE CurrentLottery SET startdate=?", [datetime.now()])
+        con.close()
+        return
     winrow = random.sample([*range(1,25)], k=7)
     winners = {
         1: [],
@@ -150,14 +154,14 @@ class Lottery(apc.Group):
         db = con.cursor()
         pool = db.execute("SELECT pool FROM CurrentLottery").fetchone()[0]
         con.close()
-        await ctx.response.send_message(f"Lotossa tänään jaossa jopa {pool} krediittiä!")
+        await ctx.response.send_message(f"Lotossa tänään jaossa jopa {pool} koppelia!")
     
     @showpool.error
     async def on_test_error(self, ctx: discord.Interaction, error: apc.AppCommandError):
         if isinstance(error, apc.CommandOnCooldown):
             await ctx.response.send_message(str(error), ephemeral=True)
         
-    @apc.command(name = "place", description = "Aseta panos tämän viikon lottoarvontaan (hinta 2 krediittiä)")
+    @apc.command(name = "place", description = "Aseta panos tämän viikon lottoarvontaan (hinta 2 koppeli)")
     async def makebet(self, ctx: discord.Interaction):
         bet = 2
         con = sqlite3.connect("data/database.db")
@@ -173,7 +177,7 @@ class Lottery(apc.Group):
         tili = 0 if not tili else tili[0]
 
         if bet > tili:
-            await ctx.response.send_message(f"Et ole noin rikas. Tilisi saldo on {tili}.", ephemeral=True)
+            await ctx.response.send_message(f"Et ole noin rikas. Tilisi saldo on {tili}, kun osallistuminen vaatii {bet}.", ephemeral=True)
             return
 
-        await ctx.response.send_message(f"Arvontaan osallistuminen maksaa {bet}. Tilisi saldo on {tili}. Osallistutaanko lottoarvontaan?", view=LotteryView(bet), ephemeral=True)
+        await ctx.response.send_message(f"Arvontaan osallistuminen maksaa {bet} koppelia. Tilisi saldo on {tili}. Osallistutaanko lottoarvontaan?", view=LotteryView(bet), ephemeral=True)
