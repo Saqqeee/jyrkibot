@@ -100,9 +100,8 @@ async def draw(date: datetime, client: discord.Client):
         for mies in value:
             db.execute("INSERT INTO LotteryWins(uid, roundid, payout, date) VALUES (?,?,?,?)", [mies[0], round, math.floor(shares[key]/len(value)), date])
             db.execute("UPDATE LotteryPlayers SET credits = credits + ? WHERE id = ?", [math.floor(shares[key]/len(value)), mies[0]])
-    for x in shares:
-        pool -= x
-    db.execute("UPDATE CurrentLottery SET id=id+1, pool=?, startdate=?", [pool, datetime.now()])
+            db.execute("UPDATE CurrentLottery SET pool=pool-?", [math.floor(shares[key]/len(value))])
+    db.execute("UPDATE CurrentLottery SET id=id+1, startdate=?", [datetime.now()])
     con.commit()
     con.close()
 
