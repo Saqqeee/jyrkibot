@@ -103,6 +103,6 @@ class Request(apc.Group):
             db.execute("UPDATE Requests SET type=? WHERE id=?", [type.value, id])
             con.commit()
             con.close()
-            await ctx.response.send_message(f"Updated request `{id}` to type {type.name}.", ephemeral=True)
+            await ctx.response.send_message(f"Updated request `{id}` to type {type.name}.")
         else:
             await ctx.response.send_message("Et voi tehdä noin!", ephemeral=True)
