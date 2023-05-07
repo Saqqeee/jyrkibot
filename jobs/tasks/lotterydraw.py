@@ -23,9 +23,9 @@ async def draw(date: datetime, client: discord.Client):
         con.commit()
         con.close()
         return
-    #if (date.hour < 17) or (date < datetime.fromisoformat(startdate[0]) + timedelta(hours=12)):
-    #    con.close()
-    #    return
+    if (date.hour < 17) or (date < datetime.fromisoformat(startdate[0]) + timedelta(hours=12)):
+        con.close()
+        return
     round, pool = db.execute("SELECT id, pool FROM CurrentLottery").fetchone()
     bets = db.execute("SELECT uid, row FROM LotteryBets WHERE roundid = ?", [round]).fetchall()
     if len(bets)==0:
