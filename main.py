@@ -64,7 +64,7 @@ huomentacooldown = config["huomentacooldown"]
 ultrararechance = config["ultrararechance"]
 rarechance = config["rarechance"]
 
-from slashcommands import huomenta, utils, lottery
+from slashcommands import huomenta, utils, lottery, drunk
 
 # Load defaults for populating an empty HuomentaResponses table
 with open("slashcommands/huomenta.json", "r", encoding="utf-8") as hfile:
@@ -84,6 +84,7 @@ db.execute("CREATE TABLE if not exists LotteryPlayers(id INTEGER PRIMARY KEY, cr
 db.execute("CREATE TABLE if not exists LotteryBets(id INTEGER PRIMARY KEY, uid INTEGER, roundid INTEGER, row TEXT)")
 db.execute("CREATE TABLE if not exists LotteryWins(id INTEGER PRIMARY KEY, uid INTEGER, roundid INTEGER, payout INTEGER, date TEXT)")
 db.execute("CREATE TABLE if not exists CurrentLottery(id INTEGER PRIMARY KEY, pool INTEGER, startdate TEXT)")
+db.execute("CREATE TABLE if not exists Alcoholist(id INTEGER PRIMARY KEY, weight INT, r REAL, bac REAL)")
 # If table HuomentaResponses is empty, populate it
 responseamount = db.execute("SELECT COUNT(*) FROM HuomentaResponses").fetchone()[0]
 if responseamount == 0:
@@ -216,6 +217,7 @@ async def ping(ctx):
 # Add commands to command tree
 tree.add_command(huomenta.Huomenta(client), guild=gld)
 tree.add_command(lottery.Lottery(client), guild=gld)
+tree.add_command(drunk.Drunk(client), guild=gld)
 tree.add_command(utils.cock, guild=gld)
 tree.add_command(utils.gpmems, guild=gld)
 tree.add_command(utils.timezone, guild=gld)
