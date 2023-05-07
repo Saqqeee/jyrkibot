@@ -75,19 +75,22 @@ class Lottery(apc.Group):
         else:
             await ctx.response.send_message("Et voi tehdä noin!", ephemeral=True)
 
-    @apc.command(name = "prizepool", description = "Palkintopotti")
-    @apc.checks.cooldown(1, 60, key=lambda i: (i.guild_id))
+    @apc.command(name = "info", description = "Tietoja nykyisestä lotosta")
     async def showpool(self, ctx: discord.Interaction):
         con = sqlite3.connect("data/database.db")
         db = con.cursor()
-        pool = db.execute("SELECT pool FROM CurrentLottery").fetchone()[0]
+        round, pool = db.execute("SELECT id, pool FROM CurrentLottery").fetchone()
+        row = db.execute("SELECT row FROM LotteryBets WHERE uid=? AND roundid=?", [ctx.user.id, round]).fetchone()
+        ownrow = ""
+        if row is not None:
+            ownrow = f"\nOlet mukana arvonnassa rivillä **{', '.join(json.loads(row[0]))}**"
+        else:
+            row = db.execute("SELECT row FROM LotteryBets WHERE uid=? AND roundid=?", [ctx.user.id, round-1]).fetchone()
+            if row is not None:
+                wins = db.execute("SELECT payout FROM LotteryWins WHERE uid=? AND roundid=?", [ctx.user.id, round-1]).fetchone()
+                ownrow = f"\nOlit mukana viime kierroksella rivillä **{', '.join(json.loads(row[0]))}** ja voitit **{wins[0]}** koppelia"
         con.close()
-        await ctx.response.send_message(f"Lotossa tänään jaossa jopa {pool} koppelia!")
-    
-    @showpool.error
-    async def on_test_error(self, ctx: discord.Interaction, error: apc.AppCommandError):
-        if isinstance(error, apc.CommandOnCooldown):
-            await ctx.response.send_message(str(error), ephemeral=True)
+        await ctx.response.send_message(f"Lotossa jaossa jopa **{pool}** koppelia!{ownrow}.", ephemeral=True)
         
     @apc.command(name = "place", description = "Aseta panos tämän viikon lottoarvontaan (hinta 2 koppeli)")
     async def makebet(self, ctx: discord.Interaction):
