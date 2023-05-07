@@ -13,7 +13,7 @@ class Drunk(apc.Group):
         apc.Choice(name="Mies", value=0.68),
         apc.Choice(name="Nainen", value=0.55)
     ])
-    async def settings(self, ctx: discord.Interaction, kg: int = None, sex: apc.Choice[float] = None):
+    async def settings(self, ctx: discord.Interaction, kg: apc.Range[int, 1] = None, sex: apc.Choice[float] = None):
         con = sqlite3.connect("data/database.db")
         db = con.cursor()
         db.execute("INSERT OR IGNORE INTO Alcoholist (id, weight, r, bac) VALUES (?, 80, 0.68, 0.0)", [ctx.user.id])
@@ -27,7 +27,7 @@ class Drunk(apc.Group):
 
     # Add a drink to database for user
     @apc.command(name="drink", description="Juo! Oletuksena 0.33-litrainen 4.6% juoma. Syötä tilavuus litroina ja vahvuus prosentteina.")
-    async def drink(self, ctx: discord.Interaction, volume: float = 0.33, content: float = 4.6):
+    async def drink(self, ctx: discord.Interaction, volume: apc.Range[float, 0.0, 10.0] = 0.33, content: apc.Range[float, 0.0, 96.0] = 4.6):
         con = sqlite3.connect("data/database.db")
         db = con.cursor()
         info = db.execute("SELECT weight, r FROM Alcoholist WHERE id=?", [ctx.user.id]).fetchone()
@@ -36,7 +36,7 @@ class Drunk(apc.Group):
             await ctx.response.send_message(f"Käyttäjääsi ei löydetty! Aseta tietosi komennolla /{self.settings.qualified_name}", ephemeral=True)
             return
         grams = (volume*1000)*(content/100)*0.789
-        bac = grams/((info[0]*1000)*info[1])*100
+        bac = grams/((info[0]*1000)*info[1])*1000
         db.execute("UPDATE Alcoholist SET bac=bac+? WHERE id=?", [bac, ctx.user.id])
         con.commit()
         con.close()
@@ -52,7 +52,7 @@ class Drunk(apc.Group):
         if not bac:
             await ctx.response.send_message(f"Käyttäjääsi ei löydetty! Aseta tietosi komennolla /{self.settings.qualified_name}", ephemeral=True)
             return
-        await ctx.response.send_message(f"Veresi alkoholipitoisuus on arviolta {round(bac[0]*10, 1)} promillea.", ephemeral=True)
+        await ctx.response.send_message(f"Veresi alkoholipitoisuus on arviolta {round(bac[0], 1)} promillea.", ephemeral=True)
     
     # For actual retards
     @apc.command(name="reset", description="on varmaa vitu jees olla legit retardi")
