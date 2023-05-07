@@ -26,7 +26,7 @@ class Drunk(apc.Group):
         await ctx.response.send_message("Tiedot päivitetty onnistuneesti.", ephemeral=True)
 
     # Add a drink to database for user
-    @apc.command(name="drink", description="Juo! Oletuksena 0.33-litrainen 4.7% juoma. Syötä tilavuus litroina ja vahvuus prosentteina.")
+    @apc.command(name="drink", description="Juo! Oletuksena 0.33-litrainen 4.6% juoma. Syötä tilavuus litroina ja vahvuus prosentteina.")
     async def drink(self, ctx: discord.Interaction, volume: float = 0.33, content: float = 4.6):
         con = sqlite3.connect("data/database.db")
         db = con.cursor()
