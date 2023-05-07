@@ -1,5 +1,6 @@
 import sqlite3
 
+
 async def calculate_bacs():
     con = sqlite3.connect("data/database.db")
     db = con.cursor()
