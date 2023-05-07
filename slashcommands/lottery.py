@@ -65,7 +65,7 @@ async def draw(date: datetime, client: discord.Client):
         con.commit()
         con.close()
         return
-    if (date.hour < 23) or (date < datetime.fromisoformat(startdate[0]) + timedelta(hours=23)):
+    if (date.hour < 20) or (date < datetime.fromisoformat(startdate[0]) + timedelta(hours=23)):
         con.close()
         return
     round, pool = db.execute("SELECT id, pool FROM CurrentLottery").fetchone()
