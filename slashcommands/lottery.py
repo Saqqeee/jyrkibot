@@ -88,7 +88,7 @@ class Lottery(apc.Group):
             row = db.execute("SELECT row FROM LotteryBets WHERE uid=? AND roundid=?", [ctx.user.id, round-1]).fetchone()
             if row is not None:
                 wins = db.execute("SELECT payout FROM LotteryWins WHERE uid=? AND roundid=?", [ctx.user.id, round-1]).fetchone()
-                ownrow = f"\nOlit mukana viime kierroksella rivillä **{', '.join(json.loads(row[0]))}** ja voitit **{wins[0]}** koppelia"
+                ownrow = f"\nOlit mukana viime kierroksella rivillä **{', '.join(json.loads(sorted(row[0])))}** ja voitit **{wins[0]}** koppelia"
         con.close()
         await ctx.response.send_message(f"Lotossa jaossa jopa **{pool}** koppelia!{ownrow}.", ephemeral=True)
         
