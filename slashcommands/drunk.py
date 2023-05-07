@@ -53,3 +53,13 @@ class Drunk(apc.Group):
             await ctx.response.send_message(f"Käyttäjääsi ei löydetty! Aseta tietosi komennolla /{self.settings.qualified_name}", ephemeral=True)
             return
         await ctx.response.send_message(f"Veresi alkoholipitoisuus on arviolta {round(bac[0]*10, 1)} promillea.", ephemeral=True)
+    
+    # For actual retards
+    @apc.command(name="reset", description="on varmaa vitu jees olla legit retardi")
+    async def bacreset(self, ctx: discord.Interaction):
+        con = sqlite3.connect("data/database.db")
+        db = con.cursor()
+        db.execute("UPDATE Alcoholist SET bac=0 WHERE id=?", [ctx.user.id])
+        con.commit()
+        con.close()
+        await ctx.response.send_message("Koeta nyt selvitä", ephemeral=True)
