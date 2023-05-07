@@ -43,6 +43,8 @@ class LotteryView(discord.ui.View):
         self.db.execute("UPDATE LotteryPlayers SET credits=credits-? WHERE id=?", [self.bet, ctx.user.id])
         self.db.execute("UPDATE CurrentLottery SET pool=pool+?", [self.bet])
         await ctx.response.edit_message(content="Valitse lottorivi", view=view_select)
+        self.con.commit()
+        self.con.close()
     
     @discord.ui.button(label="Ei", style=discord.ButtonStyle.danger)
     async def betdecline(self, ctx: discord.Interaction, button_obj: discord.ui.Button):
@@ -62,7 +64,7 @@ async def draw(date: datetime, client: discord.Client):
         con.commit()
         con.close()
         return
-    if (date.hour < 20) or (date < datetime.fromisoformat(startdate[0]) + timedelta(hours=23)):
+    if (date.hour < 23) or (date < datetime.fromisoformat(startdate[0]) + timedelta(hours=23)):
         con.close()
         return
     round, pool = db.execute("SELECT id, pool FROM CurrentLottery").fetchone()
@@ -112,9 +114,9 @@ async def draw(date: datetime, client: discord.Client):
         member = discord.utils.get(channel.guild.members, id=mies[0])
         embed.add_field(name=f"**{i}.** {member.display_name}", value=f"{mies[1]} oikein")
 
+    await channel.send(content="Arvonnat suoritettu! Nähdään huomenna samaan aikaan.", embed=embed)
     con.commit()
     con.close()
-    await channel.send(content="Arvonnat suoritettu! Nähdään huomenna samaan aikaan.", embed=embed)
 
 class Lottery(apc.Group):
     def __init__(self, client):
@@ -128,7 +130,6 @@ class Lottery(apc.Group):
         tili = db.execute("SELECT credits FROM LotteryPlayers WHERE id=?", [ctx.user.id]).fetchone()
         tili = 0 if not tili else tili[0]
         await ctx.response.send_message(f"Tilisi saldo on {tili}", ephemeral=True)
-        con.commit()
         con.close()
     
     @apc.command(name = "setchannel", description = "Owner only command")
@@ -148,6 +149,7 @@ class Lottery(apc.Group):
         db = con.cursor()
         pool = db.execute("SELECT pool FROM CurrentLottery").fetchone()[0]
         await ctx.response.send_message(f"Lotossa tänään jaossa jopa {pool} krediittiä!")
+        con.close()
     
     @showpool.error
     async def on_test_error(self, ctx: discord.Interaction, error: apc.AppCommandError):
@@ -173,3 +175,4 @@ class Lottery(apc.Group):
             return
 
         await ctx.response.send_message(f"Arvontaan osallistuminen maksaa {bet}. Tilisi saldo on {tili}. Osallistutaanko lottoarvontaan?", view=LotteryView(con, bet), ephemeral=True)
+        con.close()

@@ -95,6 +95,7 @@ class Huomenta(apc.Group):
             member = discord.utils.get(ctx.guild.members, id=leader[0])
             embed.add_field(name=f"**{i}.** {member.display_name}", value=f"Herätyksiä {leader[1]}", inline=False)
         await ctx.response.send_message(embed=embed)
+        con.close()
 
     
     @apc.command(name = "add", description = "Owner only command")

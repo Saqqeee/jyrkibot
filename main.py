@@ -114,7 +114,7 @@ async def on_ready():
 # someone wakes up at an unreasonable time. Also
 # logs these into a database.
 @client.event
-async def on_message(msg):
+async def on_message(msg: discord.Message):
     if msg.author == client.user or msg.author.bot:
         return
     if msg.content.lower() == "huomenta":
