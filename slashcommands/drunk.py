@@ -18,7 +18,7 @@ class Drunk(apc.Group):
         db = con.cursor()
         db.execute("INSERT OR IGNORE INTO Alcoholist (id, weight, r, bac) VALUES (?, 80, 0.68, 0.0)", [ctx.user.id])
         if kg != None:
-            db.execute("UPDATE Alcoholist SET kg=? WHERE id=?", [kg, ctx.user.id])
+            db.execute("UPDATE Alcoholist SET weight=? WHERE id=?", [kg, ctx.user.id])
         if sex != None:
             db.execute("UPDATE Alcoholist SET r=? WHERE id=?", [sex.value, ctx.user.id])
         con.commit()
