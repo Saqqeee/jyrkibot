@@ -47,8 +47,8 @@ class Huomenta(apc.Group):
         db = con.cursor()
         userexists = db.execute("SELECT EXISTS(SELECT * FROM Users WHERE id=?)", [user.id]).fetchone()[0]
         if not userexists:
-            await ctx.response.send_message("Käyttäjää ei löydetty", ephemeral=True)
             con.close()
+            await ctx.response.send_message("Käyttäjää ei löydetty", ephemeral=True)
             return
         times = db.execute("SELECT COUNT(*) FROM Huomenet WHERE uid = ?", [user.id]).fetchone()
         rats = db.execute("SELECT COUNT(hour) FROM Huomenet WHERE uid = ? AND (hour >= ? OR hour < ?)", [user.id, rattimes[0], rattimes[1]]).fetchone()
@@ -59,6 +59,7 @@ class Huomenta(apc.Group):
         morototal = db.execute("SELECT COUNT(*) FROM HuomentaResponses WHERE rarity=0").fetchone()[0]
         raretotal = db.execute("SELECT COUNT(*) FROM HuomentaResponses WHERE rarity=1").fetchone()[0]
         ultratotal = db.execute("SELECT COUNT(*) FROM HuomentaResponses WHERE rarity=2").fetchone()[0]
+        con.close()
 
         huomentastats = f"Tavallisia huomenia {morosfound}/{morototal}\nHarvinaisia huomenia {raresfound}/{raretotal}\nULTRA-harvinaisia huomenia {ultrasfound}/{ultratotal}"
 
@@ -75,13 +76,14 @@ class Huomenta(apc.Group):
         embed.add_field(name="Jyrkin vastaukset", value=huomentastats, inline=False)
         embed.set_thumbnail(url=user.display_avatar)
         await ctx.response.send_message(embed=embed, ephemeral=hidden)
-        con.close()
     
     @apc.command(name = "leaderboard", description = "Kuka on herännyt eniten!")
     async def leaderboard(self, ctx: discord.Interaction):
         con = sqlite3.connect("data/database.db")
         db = con.cursor()
         leaders = db.execute("SELECT uid, COUNT(hour) FROM Huomenet GROUP BY uid ORDER BY COUNT(hour) DESC LIMIT 5").fetchall()
+        con.close()
+
         if len(leaders) == 0:
             await ctx.response.send_message("Kukaan täällä ei ole herännyt.")
             return
@@ -95,7 +97,6 @@ class Huomenta(apc.Group):
             member = discord.utils.get(ctx.guild.members, id=leader[0])
             embed.add_field(name=f"**{i}.** {member.display_name}", value=f"Herätyksiä {leader[1]}", inline=False)
         await ctx.response.send_message(embed=embed)
-        con.close()
 
     
     @apc.command(name = "add", description = "Owner only command")

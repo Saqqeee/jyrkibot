@@ -181,7 +181,6 @@ async def on_message(msg: discord.Message):
         foundlist = json.dumps(foundlist)
 
         # Send response and save stuff into databases
-        await msg.channel.send(rarenotif + respmsg + rarenotif)
         db.execute("INSERT INTO Huomenet (uid, hour) VALUES (?, ?)", [msg.author.id, hour])
         db.execute("INSERT OR IGNORE INTO HuomentaUserStats(id) VALUES (?)", [msg.author.id])
         if rarity == 0:
@@ -194,6 +193,7 @@ async def on_message(msg: discord.Message):
         db.execute("UPDATE LotteryPlayers SET credits=credits+? WHERE id=?", [earn, msg.author.id])
         con.commit()
         con.close()
+        await msg.channel.send(rarenotif + respmsg + rarenotif)
 
 # If this command is called by the owner set in cfg.json,
 # run a script that syncs the repo with origin and restarts the bot

@@ -32,9 +32,9 @@ async def timezone(ctx, timezones: discord.app_commands.Choice[str]):
     db = con.cursor()
     db.execute("INSERT OR IGNORE INTO Users (id, timezone) VALUES (?, ?)", [ctx.user.id, timezones.value])
     db.execute("UPDATE Users SET timezone = ? WHERE id = ?", [timezones.value, ctx.user.id])
-    await ctx.response.send_message(f"{ctx.user.mention}: Aikavyöhykkeeksi vaihdettu {timezones.name}.", ephemeral=True)
     con.commit()
     con.close()
+    await ctx.response.send_message(f"{ctx.user.mention}: Aikavyöhykkeeksi vaihdettu {timezones.name}.", ephemeral=True)
 
 @apc.command(name = "c7ck")
 async def cock(ctx, user: discord.Member = None):
