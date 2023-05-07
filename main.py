@@ -76,6 +76,7 @@ if not os.path.exists("data"):
 con = sqlite3.connect("data/database.db")
 db = con.cursor()
 # Create tables if they don't already exist
+db.execute("CREATE TABLE if not exists Requests(id INTEGER PRIMARY KEY, uid INTEGER, message TEXT, date TEXT, type TEXT)")
 db.execute("CREATE TABLE if not exists Users(id INTEGER PRIMARY KEY, timezone TEXT)")
 db.execute("CREATE TABLE if not exists Huomenet(id INTEGER PRIMARY KEY, uid INTEGER, hour INTEGER)")
 db.execute("CREATE TABLE if not exists HuomentaResponses(id INTEGER PRIMARY KEY, response TEXT UNIQUE, rarity INTEGER, rat INTEGER)")
@@ -218,6 +219,7 @@ async def ping(ctx):
 tree.add_command(huomenta.Huomenta(client), guild=gld)
 tree.add_command(lottery.Lottery(client), guild=gld)
 tree.add_command(drunk.Drunk(client), guild=gld)
+tree.add_command(utils.Request(client), guild=gld)
 tree.add_command(utils.cock, guild=gld)
 tree.add_command(utils.gpmems, guild=gld)
 tree.add_command(utils.timezone, guild=gld)
