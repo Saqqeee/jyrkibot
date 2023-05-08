@@ -154,3 +154,49 @@ class Lottery(apc.Group):
             view=LotteryView(bet),
             ephemeral=True,
         )
+
+    @apc.command(name="gift", description="Lahjoita koppeleita jollekin toiselle.")
+    async def gift(
+        self,
+        ctx: discord.Interaction,
+        recipient: discord.Member,
+        amount: apc.Range[int, 0],
+    ):
+        """
+        Allows transferring funds from one user to another.
+        """
+        if recipient == ctx.user:
+            await ctx.response.send_message(
+                "Ei helvetti eihän se nyt noin voi mitenkään toimia että rahoja siirretään omaan taskuun.",
+                ephemeral=True,
+            )
+            return
+        con = sqlite3.connect("data/database.db")
+        db = con.cursor()
+        tili = db.execute(
+            "SELECT credits FROM LotteryPlayers WHERE id=?", [ctx.user.id]
+        ).fetchone()
+        if not tili or tili[0] < amount:
+            await ctx.response.send_message(
+                f"Et ole noin rikas. Tilisi saldo on {0 if not tili else tili}.",
+                ephemeral=True,
+            )
+            return
+        db.execute(
+            "INSERT OR IGNORE INTO LotteryPlayers(id, credits) VALUES(?, 0)",
+            [recipient.id],
+        )
+        db.execute(
+            "UPDATE LotteryPlayers SET credits=credits+? WHERE id=?",
+            [amount, recipient.id],
+        )
+        db.execute(
+            "UPDATE LotteryPlayers SET credits=credits-? WHERE id=?",
+            [amount, ctx.user.id],
+        )
+        con.commit()
+        con.close()
+        await ctx.response.send_message(
+            f"Käyttäjän {recipient.mention} tilille siirretty **{amount}** koppelia.",
+            ephemeral=True,
+        )
