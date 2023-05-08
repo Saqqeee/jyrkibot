@@ -205,7 +205,7 @@ async def on_message(msg: discord.Message):
             userresponses = db.execute(
                 "SELECT foundlist FROM HuomentaUserStats WHERE id=?", [msg.author.id]
             ).fetchone()
-        if userresponses != None:
+        if userresponses[0] != None:
             foundlist = list(json.loads(userresponses[0]))
         else:
             foundlist = []
