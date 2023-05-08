@@ -38,7 +38,7 @@ class DaySelect(ui.Select):
             )
         self.con.commit()
         self.con.close()
-        await ctx.response.edit_message(content="Alarm set", view=None)
+        await ctx.response.edit_message(content="Herätys asetettu", view=None)
 
 
 class TimeSelect(ui.Select):
