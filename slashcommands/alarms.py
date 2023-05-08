@@ -108,8 +108,10 @@ class Alarm(apc.Group):
         ).fetchone()
         self.con.close()
         if not self.curalarm:
-            await ctx.response.send_message("Sinulla ei ole herätystä jota poistaa.")
+            await ctx.response.send_message(
+                "Sinulla ei ole herätystä jota poistaa.", ephemeral=True
+            )
             return
         await ctx.response.send_message(
-            "Poistetaanko varmasti herätys?", view=AlarmDelConfirm()
+            "Poistetaanko varmasti herätys?", view=AlarmDelConfirm(), ephemeral=True
         )
