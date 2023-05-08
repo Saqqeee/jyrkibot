@@ -65,7 +65,7 @@ huomentacooldown = config["huomentacooldown"]
 ultrararechance = config["ultrararechance"]
 rarechance = config["rarechance"]
 
-from slashcommands import huomenta, utils, lottery, drunk
+from slashcommands import huomenta, utils, lottery, drunk, alarms
 
 # Load defaults for populating an empty HuomentaResponses table
 with open("slashcommands/huomenta.json", "r", encoding="utf-8") as hfile:
@@ -287,6 +287,7 @@ tree.add_command(huomenta.Huomenta(client), guild=gld)
 tree.add_command(lottery.Lottery(client), guild=gld)
 tree.add_command(drunk.Drunk(client), guild=gld)
 tree.add_command(utils.Request(client), guild=gld)
+tree.add_command(alarms.Alarm(client), guild=gld)
 tree.add_command(utils.cock, guild=gld)
 tree.add_command(utils.gpmems, guild=gld)
 tree.add_command(utils.timezone, guild=gld)
