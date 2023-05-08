@@ -1,25 +1,24 @@
 import threading
 import asyncio
 from datetime import datetime
-from jobs.tasks import calculate_bacs, lotterydraw
+from jobs.tasks import calculate_bacs, lotterydraw, sound_alarms
 
 
 async def tasks(client):
-    timer = 0
     while True:
         date = datetime.now()
 
         # Once per minute
         await lotterydraw.draw(date, client)
+        await sound_alarms.alarm(date, client)
+
+        # Once per five minutes
+        if date.minute % 5 == 0:
+            await sound_alarms.snooze(date, client)
 
         # Once per six minutes
-        if timer % 6 == 0:
+        if date.minute % 6 == 0:
             await calculate_bacs.calculate_bacs()
-
-        if timer < 1339:
-            timer += 1
-        else:
-            timer = 0
         await asyncio.sleep(60)
 
 
