@@ -84,7 +84,7 @@ async def draw(date: datetime, client: discord.Client):
                     [winsum],
                 )
                 await client.get_user(mies[0]).send(
-                    f"Voitit lotosta {winsum} koppelia."
+                    f"Voitit lotosta **{winsum}** koppelia."
                 )
     db.execute("UPDATE CurrentLottery SET id=id+1, startdate=?", [datetime.now()])
     newpool = db.execute("SELECT pool FROM CurrentLottery").fetchone()[0]
