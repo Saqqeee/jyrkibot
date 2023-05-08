@@ -103,10 +103,10 @@ db.execute(
     "CREATE TABLE if not exists CurrentLottery(id INTEGER PRIMARY KEY, pool INTEGER, startdate TEXT)"
 )
 db.execute(
-    "CREATE TABLE if not exists Alcoholist(id INTEGER PRIMARY KEY, weight INT, r REAL, bac REAL)"
+    "CREATE TABLE if not exists Alcoholist(id INTEGER PRIMARY KEY, weight INTEGER, r REAL, bac REAL)"
 )
 db.execute(
-    "CREATE TABLE if not exists Alarms(id INTEGER PRIMARY KEY, time TEXT, weekdays TEXT)"
+    "CREATE TABLE if not exists Alarms(id INTEGER PRIMARY KEY, time INTEGER, weekdays TEXT, last TEXT, snooze INTEGER)"
 )
 # If table HuomentaResponses is empty, populate it
 responseamount = db.execute("SELECT COUNT(*) FROM HuomentaResponses").fetchone()[0]
