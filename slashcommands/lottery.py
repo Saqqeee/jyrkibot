@@ -1,10 +1,7 @@
 import discord
 from discord import app_commands as apc
 import json
-import random
 import sqlite3
-import math
-from datetime import datetime, timedelta
 
 with open("cfg/cfg.json", "r") as confile:
     config = json.load(confile)
@@ -15,10 +12,10 @@ lotterychannel = config["lotterychannel"]
 class LotteryNumbers(discord.ui.Select):
     def __init__(self, options: list):
         super().__init__(options=options, min_values=7, max_values=7)
-        self.con = sqlite3.connect("data/database.db")
-        self.db = self.con.cursor()
 
     async def callback(self, ctx: discord.Interaction):
+        self.con = sqlite3.connect("data/database.db")
+        self.db = self.con.cursor()
         self.roundid = self.db.execute("SELECT id FROM CurrentLottery").fetchone()[0]
         self.db.execute(
             "INSERT INTO LotteryBets(uid, roundid, row) VALUES (?,?,?)",
@@ -34,12 +31,12 @@ class LotteryNumbers(discord.ui.Select):
 class LotteryView(discord.ui.View):
     def __init__(self, bet: int):
         super().__init__()
-        self.con = sqlite3.connect("data/database.db")
-        self.db = self.con.cursor()
         self.bet = bet
 
     @discord.ui.button(label="Kyllä", style=discord.ButtonStyle.success)
     async def betconfirm(self, ctx: discord.Interaction, button_obj: discord.ui.Button):
+        self.con = sqlite3.connect("data/database.db")
+        self.db = self.con.cursor()
         options = []
         for i in range(1, 25):
             options.append(discord.SelectOption(label=f"{i}", value=i))
