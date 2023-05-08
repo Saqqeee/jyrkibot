@@ -105,7 +105,9 @@ db.execute(
 db.execute(
     "CREATE TABLE if not exists Alcoholist(id INTEGER PRIMARY KEY, weight INT, r REAL, bac REAL)"
 )
-db.execute("CREATE TABLE if not exists Alarms(id INTEGER PRIMARY KEY)")
+db.execute(
+    "CREATE TABLE if not exists Alarms(id INTEGER PRIMARY KEY, time TEXT, weekdays TEXT)"
+)
 # If table HuomentaResponses is empty, populate it
 responseamount = db.execute("SELECT COUNT(*) FROM HuomentaResponses").fetchone()[0]
 if responseamount == 0:
