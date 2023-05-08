@@ -19,25 +19,30 @@ async def draw(date: datetime, client: discord.Client):
     con = sqlite3.connect("data/database.db")
     db = con.cursor()
     startdate = db.execute("SELECT startdate FROM CurrentLottery").fetchone()
+
     if startdate == None:
         db.execute("INSERT INTO CurrentLottery(pool, startdate) VALUES (0, ?)", [date])
         await channel.send("Uusi lottosessio aloitettu")
         con.commit()
         con.close()
         return
+
     if (date.hour < 17) or (
-        date < datetime.fromisoformat(startdate[0]) + timedelta(hours=12)
+        date - datetime.fromisoformat(startdate[0]) < timedelta(hours=12)
     ):
         con.close()
         return
+
     round, pool = db.execute("SELECT id, pool FROM CurrentLottery").fetchone()
     bets = db.execute(
         "SELECT uid, row FROM LotteryBets WHERE roundid = ?", [round]
     ).fetchall()
+
     if len(bets) == 0:
         db.execute("UPDATE CurrentLottery SET startdate=?", [datetime.now()])
         con.close()
         return
+
     winrow = random.sample([*range(1, 25)], k=7)
     winners = {
         1: [],
@@ -51,6 +56,7 @@ async def draw(date: datetime, client: discord.Client):
 
     shares = [0]
     parhaat = []
+
     for user in bets:
         correctamount = 0
         for x in json.loads(user[1]):
@@ -59,28 +65,39 @@ async def draw(date: datetime, client: discord.Client):
         if correctamount > 0:
             winners[correctamount].append([user[0]])
             parhaat.append([user[0], correctamount])
+
     for key, value in winners.items():
         shares.append(math.floor(calculatewinnings(key) * pool))
         for mies in value:
-            db.execute(
-                "INSERT INTO LotteryWins(uid, roundid, payout, date) VALUES (?,?,?,?)",
-                [mies[0], round, math.floor(shares[key] / len(value)), date],
-            )
-            db.execute(
-                "UPDATE LotteryPlayers SET credits = credits + ? WHERE id = ?",
-                [math.floor(shares[key] / len(value)), mies[0]],
-            )
-            db.execute(
-                "UPDATE CurrentLottery SET pool=pool-?",
-                [math.floor(shares[key] / len(value))],
-            )
+            winsum = math.floor(shares[key] / len(value))
+            if winsum > 0:
+                db.execute(
+                    "INSERT INTO LotteryWins(uid, roundid, payout, date) VALUES (?,?,?,?)",
+                    [mies[0], round, winsum, date],
+                )
+                db.execute(
+                    "UPDATE LotteryPlayers SET credits = credits + ? WHERE id = ?",
+                    [winsum, mies[0]],
+                )
+                db.execute(
+                    "UPDATE CurrentLottery SET pool=pool-?",
+                    [winsum],
+                )
+                await client.get_user(mies[0]).send(
+                    f"Voitit lotosta {winsum} koppelia."
+                )
     db.execute("UPDATE CurrentLottery SET id=id+1, startdate=?", [datetime.now()])
     newpool = db.execute("SELECT pool FROM CurrentLottery").fetchone()[0]
     con.commit()
     con.close()
 
+    if len(parhaat) == 0:
+        embedtitle = "Ei voittajia tällä kierroksella"
+    else:
+        embedtitle = f"Kierroksen parhaat rivit (Potti {pool} koppelia)"
+
     embed = discord.Embed(
-        title=f"Kierroksen voittajat (Potti {pool} koppelia)",
+        title=embedtitle,
         color=discord.Color.dark_magenta(),
     )
 
