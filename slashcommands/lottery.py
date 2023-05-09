@@ -122,7 +122,7 @@ class Lottery(apc.Group):
         description="Aseta panos tämän viikon lottoarvontaan (hinta 2 koppeli)",
     )
     async def makebet(self, ctx: discord.Interaction):
-        bet = 2
+        bet = 20
         con = sqlite3.connect("data/database.db")
         db = con.cursor()
         tili = db.execute(

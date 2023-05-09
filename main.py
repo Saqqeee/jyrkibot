@@ -43,6 +43,7 @@ defaults = {
     "ultrararechance": 1000,
     "rarechance": 100,
     "lotterychannel": None,
+    "basicincome": 10,
 }
 changes = False
 for key, value in defaults.items():
@@ -64,6 +65,7 @@ ratend = config["rattimes"][1]
 huomentacooldown = config["huomentacooldown"]
 ultrararechance = config["ultrararechance"]
 rarechance = config["rarechance"]
+basicincome = config["basicincome"]
 
 from slashcommands import huomenta, utils, lottery, drunk, alarms
 
@@ -176,15 +178,15 @@ async def on_message(msg: discord.Message):
             rarity = 2
             rarenotif = ":star:" * 3
             rat = 0
-            earn = 50
+            earn = 50 * basicincome
         elif random.randint(1, rarechance) == 1:
             rarity = 1
             rarenotif = ":star:"
-            earn = 5
+            earn = 5 * basicincome
         else:
             rarity = 0
             rarenotif = ""
-            earn = 1
+            earn = basicincome
         # Rat check. Ultra rares override this
         if (hour < ratend or hour >= ratstart) and rarity != 2:
             rat = 1
