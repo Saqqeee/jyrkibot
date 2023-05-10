@@ -44,6 +44,7 @@ defaults = {
     "rarechance": 100,
     "lotterychannel": None,
     "basicincome": 10,
+    "bet": 20,
 }
 changes = False
 for key, value in defaults.items():

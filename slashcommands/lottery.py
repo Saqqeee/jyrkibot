@@ -7,6 +7,7 @@ with open("cfg/cfg.json", "r") as confile:
     config = json.load(confile)
 owner = config["owner"]
 lotterychannel = config["lotterychannel"]
+bet = config["bet"]
 
 
 class LotteryNumbers(discord.ui.Select):
@@ -119,10 +120,9 @@ class Lottery(apc.Group):
 
     @apc.command(
         name="place",
-        description="Aseta panos tämän viikon lottoarvontaan (hinta 2 koppeli)",
+        description=f"Osallistu lottoarvontaan (rivin hinta {bet} koppelia.)",
     )
     async def makebet(self, ctx: discord.Interaction):
-        bet = 20
         con = sqlite3.connect("data/database.db")
         db = con.cursor()
         tili = db.execute(
@@ -160,7 +160,7 @@ class Lottery(apc.Group):
         self,
         ctx: discord.Interaction,
         recipient: discord.Member,
-        amount: apc.Range[int, 0],
+        amount: apc.Range[int, 1],
     ):
         """
         Allows transferring funds from one user to another.
@@ -178,7 +178,7 @@ class Lottery(apc.Group):
         ).fetchone()
         if not tili or tili[0] < amount:
             await ctx.response.send_message(
-                f"Et ole noin rikas. Tilisi saldo on {0 if not tili else tili}.",
+                f"Et ole noin rikas. Tilisi saldo on {0 if not tili else tili[0]}.",
                 ephemeral=True,
             )
             return
