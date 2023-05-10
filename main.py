@@ -163,7 +163,7 @@ async def on_voice_state_update(
     if (
         member == client.user
         or member.bot
-        or (voicechannel and after.channel.id != voicechannel)
+        or (voicechannel and after.channel and after.channel.id != voicechannel)
     ):
         # Do nothing if the event was caused by self or another bot,
         # or someone joins a different channel than which the bot is already on
