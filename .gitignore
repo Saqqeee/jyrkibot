@@ -163,3 +163,4 @@ cfg/
 data/
 *.log
 .vscode/
+ffmpeg.*
