@@ -174,7 +174,11 @@ async def on_voice_state_update(
         # connect to that same channel
         await voice.joinchannel(client, after.channel)
 
-    if before.channel and before.channel.members == [client.user]:
+    if (
+        before.channel
+        and client.voice_clients
+        and client.voice_clients[0].channel.members == [client.user]
+    ):
         # If someone leaves any voice channel and the bot is left alone, leave
         await voice.leavechannel(client, client.voice_clients[0])
 
