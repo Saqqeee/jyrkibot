@@ -1,8 +1,8 @@
 import discord
 from discord import app_commands as apc
-import json
 import os
 import asyncio
+from jobs.tasks.cache_config import config
 
 
 class Tools(apc.Group):
@@ -12,15 +12,14 @@ class Tools(apc.Group):
     All commands in this class check the interaction and if the user is not the owner, an error message is sent.
     """
 
-    def __init__(self, client: discord.Client, owner):
+    def __init__(self, client: discord.Client):
         super().__init__(
             name="tools", description="Owner only tools for managing the bot"
         )
         self.client = client
-        self.owner = owner
 
     async def interaction_check(self, interaction: discord.Interaction):
-        return interaction.user.id == self.owner
+        return interaction.user.id == config.owner
 
     async def on_error(self, interaction: discord.Interaction, error):
         if isinstance(error, apc.CheckFailure):
@@ -38,25 +37,15 @@ class Tools(apc.Group):
 
         if not channel:
             # Replace set voice channel with null
-
-            with open("cfg/cfg.json", "r") as confile:
-                config = json.load(confile)
-            config.update({"voicechannel": None})
-            with open("cfg/cfg.json", "w") as confile:
-                json.dump(config, confile)
+            config.updateconfig("voicechannel", None)
 
             await ctx.response.send_message(
-                "Voice channel removed from config. Wait for bot refresh.",
+                "Voice channel removed from config.",
                 ephemeral=True,
             )
         else:
             # Replace set voice channel with new voice channel
-
-            with open("cfg/cfg.json", "r") as confile:
-                config = json.load(confile)
-            config.update({"voicechannel": channel.id})
-            with open("cfg/cfg.json", "w") as confile:
-                json.dump(config, confile)
+            config.updateconfig("voicechannel", channel.id)
 
             await ctx.response.send_message(
                 f"Voice channel set to {channel.mention}.",

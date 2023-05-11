@@ -4,10 +4,7 @@ import math
 import json
 import random
 from datetime import datetime, timedelta
-
-with open("cfg/cfg.json", "r") as confile:
-    config = json.load(confile)
-lotterychannel = config["lotterychannel"]
+from jobs.tasks.cache_config import config
 
 
 def calculatewinnings(amount: int):
@@ -15,7 +12,7 @@ def calculatewinnings(amount: int):
 
 
 async def draw(date: datetime, client: discord.Client):
-    channel = client.get_channel(lotterychannel)
+    channel = client.get_channel(config.lotterychannel)
     con = sqlite3.connect("data/database.db")
     db = con.cursor()
     startdate = db.execute("SELECT startdate FROM CurrentLottery").fetchone()

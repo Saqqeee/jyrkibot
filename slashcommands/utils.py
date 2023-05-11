@@ -1,13 +1,9 @@
 import discord
 from discord import app_commands as apc
-import json
 import sqlite3
 import random
 from datetime import datetime
-
-with open("cfg/cfg.json", "r") as confile:
-    config = json.load(confile)
-owner = config["owner"]
+from jobs.tasks.cache_config import config
 
 
 @apc.command(name="roleinfo", description="Näytä roolin tiedot")
@@ -141,7 +137,7 @@ class Request(apc.Group):
     async def updaterequest(
         self, ctx: discord.Interaction, id: int, type: apc.Choice[str]
     ):
-        if ctx.user.id == owner:
+        if ctx.user.id == config.owner:
             con = sqlite3.connect("data/database.db")
             db = con.cursor()
             check = db.execute("SELECT * FROM Requests WHERE id=?", [id]).fetchone()

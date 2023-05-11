@@ -4,22 +4,13 @@ import random
 import json
 import pytz
 from datetime import datetime, timedelta
-
-with open("cfg/cfg.json", "r") as confile:
-    config = json.load(confile)
-ratstart = config["rattimes"][0]
-ratend = config["rattimes"][1]
-huomentacooldown = config["huomentacooldown"]
-ultrararechance = config["ultrararechance"]
-rarechance = config["rarechance"]
-basicincome = config["basicincome"]
+from jobs.tasks.cache_config import config
 
 
 async def goodmorning(msg: discord.Message):
     """
     Send a good morning message and do some database magic
     """
-
     # Connect to database and create new user if id is not found, also setting a default time zone
     con = sqlite3.connect("data/database.db")
     db = con.cursor()
@@ -35,7 +26,7 @@ async def goodmorning(msg: discord.Message):
     ).fetchone()
     if lastdate != None and datetime.fromisoformat(
         lastdate[0]
-    ) > datetime.now() - timedelta(hours=huomentacooldown):
+    ) > datetime.now() - timedelta(hours=config.huomentacooldown):
         con.commit()
         con.close()
         return
@@ -47,21 +38,21 @@ async def goodmorning(msg: discord.Message):
     aika = datetime.now()
 
     # Check for ultra rares and regular rares
-    if random.randint(1, ultrararechance) == 1:
+    if random.randint(1, config.ultrararechance) == 1:
         rarity = 2
         rarenotif = ":star:" * 3
         rat = 0
-        earn = 50 * basicincome
-    elif random.randint(1, rarechance) == 1:
+        earn = 50 * config.basicincome
+    elif random.randint(1, config.rarechance) == 1:
         rarity = 1
         rarenotif = ":star:"
-        earn = 5 * basicincome
+        earn = 5 * config.basicincome
     else:
         rarity = 0
         rarenotif = ""
-        earn = basicincome
+        earn = config.basicincome
     # Rat check. Ultra rares override this
-    if (hour < ratend or hour >= ratstart) and rarity != 2:
+    if (hour < config.rattimes[1] or hour >= config.rattimes[0]) and rarity != 2:
         rat = 1
     else:
         rat = 0

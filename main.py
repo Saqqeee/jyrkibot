@@ -5,73 +5,16 @@ import os
 import logging
 import subprocess
 import sys
+from jobs.tasks.cache_config import config
 
 handler = logging.FileHandler(filename="loki.log", encoding="utf-8", mode="w")
-
-# Check if the configuration file exists
-if not os.path.isfile("cfg/cfg.json"):
-    # If the file doesn't exist, check if the directory exists
-    # If not, make the directory
-    if not os.path.exists("cfg"):
-        os.makedirs("cfg")
-    # Ask the user for some configuration variables and
-    # dump them into a new config file:
-    # - TOKEN has to be set for the bot to be used
-    # - guild can be set if the commands should only be synced
-    #    to one server; leave None to sync them globally
-    # - owner has to be set for certain commands (such as /update) to work
-    # - rattimes is for determining between which hours is it appropriate to wake up
-    data = {
-        "TOKEN": input("Your Discord app's auth token: "),
-        "guild": None,
-        "owner": int(input("Your own Discord ID: ")),
-    }
-    with open("cfg/cfg.json", "w+") as confile:
-        json.dump(data, confile)
-
-# Read configurations from file and save them into variables
-with open("cfg/cfg.json", "r") as confile:
-    config = json.load(confile)
-
-# Check again if any rows are missing and insert defaults if so
-defaults = {
-    "rattimes": [11, 4],
-    "huomentacooldown": 12,
-    "ultrararechance": 1000,
-    "rarechance": 100,
-    "lotterychannel": None,
-    "basicincome": 10,
-    "bet": 20,
-    "voicechannel": None,
-}
-changes = False
-for key, value in defaults.items():
-    if key not in config:
-        config.update({key: value})
-        changes = True
-if changes:
-    with open("cfg/cfg.json", "w+") as confile:
-        json.dump(config, confile)
-
-token = config["TOKEN"]
-if config["guild"] == None:
-    gld = None
-else:
-    gld = discord.Object(id=config["guild"])
-owner = config["owner"]
-ratstart = config["rattimes"][0]
-ratend = config["rattimes"][1]
-huomentacooldown = config["huomentacooldown"]
-ultrararechance = config["ultrararechance"]
-rarechance = config["rarechance"]
-basicincome = config["basicincome"]
-voicechannel = config["voicechannel"]
 
 # Connect into database or create one if it doesn't already exist
 if not os.path.exists("data"):
     os.makedirs("data")
 if not os.path.exists("data/files"):
     os.makedirs("data/files")
+
 con = sqlite3.connect("data/database.db")
 db = con.cursor()
 # Create tables if they don't already exist
@@ -126,6 +69,8 @@ intents.members = True
 
 client = discord.Client(intents=intents)
 
+gld = discord.Object(id=config.guild) if config.guild else None
+
 # Sync command tree
 tree = discord.app_commands.CommandTree(client)
 
@@ -163,7 +108,11 @@ async def on_voice_state_update(
     if (
         member == client.user
         or member.bot
-        or (voicechannel and after.channel and after.channel.id != voicechannel)
+        or (
+            config.voicechannel
+            and after.channel
+            and after.channel.id != config.voicechannel
+        )
     ):
         # Do nothing if the event was caused by self or another bot,
         # or someone joins a different channel than which the bot is already on
@@ -191,7 +140,7 @@ async def update(ctx: discord.Interaction):
     If this command is called by the owner set in cfg.json,
     run a script that syncs the repo with origin and restarts the bot
     """
-    if ctx.user.id == owner:
+    if ctx.user.id == config.owner:
         await ctx.response.send_message("Jyrki ottaa päikkärit", ephemeral=True)
         subprocess.Popen("./update.sh")
         await client.close()
@@ -214,10 +163,10 @@ tree.add_command(lottery.Lottery(client), guild=gld)
 tree.add_command(drunk.Drunk(client), guild=gld)
 tree.add_command(utils.Request(client), guild=gld)
 tree.add_command(alarms.Alarm(client), guild=gld)
-tree.add_command(tools.Tools(client, owner), guild=gld)
+tree.add_command(tools.Tools(client), guild=gld)
 tree.add_command(utils.C7ck(client), guild=gld)
 tree.add_command(utils.gpmems, guild=gld)
 tree.add_command(utils.timezone, guild=gld)
 
 if __name__ == "__main__":
-    client.run(token, log_handler=handler)
+    client.run(config.token, log_handler=handler)

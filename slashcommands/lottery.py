@@ -2,12 +2,7 @@ import discord
 from discord import app_commands as apc
 import json
 import sqlite3
-
-with open("cfg/cfg.json", "r") as confile:
-    config = json.load(confile)
-owner = config["owner"]
-lotterychannel = config["lotterychannel"]
-bet = config["bet"]
+from jobs.tasks.cache_config import config
 
 
 class LotteryNumbers(discord.ui.Select):
@@ -78,7 +73,7 @@ class Lottery(apc.Group):
 
     @apc.command(name="setchannel", description="Owner only command")
     async def lotterychannel(self, ctx: discord.Interaction):
-        if ctx.user.id == owner:
+        if ctx.user.id == config.owner:
             config["lotterychannel"] = ctx.channel_id
             with open("cfg/cfg.json", "w+") as confile:
                 json.dump(config, confile)
@@ -120,7 +115,7 @@ class Lottery(apc.Group):
 
     @apc.command(
         name="place",
-        description=f"Osallistu lottoarvontaan (rivin hinta {bet} koppelia.)",
+        description=f"Osallistu lottoarvontaan (rivin hinta {config.bet} koppelia.)",
     )
     async def makebet(self, ctx: discord.Interaction):
         con = sqlite3.connect("data/database.db")
@@ -142,16 +137,16 @@ class Lottery(apc.Group):
             return
         tili = 0 if not tili else tili[0]
 
-        if bet > tili:
+        if config.bet > tili:
             await ctx.response.send_message(
-                f"Et ole noin rikas. Tilisi saldo on {tili}, kun osallistuminen vaatii {bet}.",
+                f"Et ole noin rikas. Tilisi saldo on {tili}, kun osallistuminen vaatii {config.bet}.",
                 ephemeral=True,
             )
             return
 
         await ctx.response.send_message(
-            f"Arvontaan osallistuminen maksaa {bet} koppelia. Tilisi saldo on {tili}. Osallistutaanko lottoarvontaan?",
-            view=LotteryView(bet),
+            f"Arvontaan osallistuminen maksaa {config.bet} koppelia. Tilisi saldo on {tili}. Osallistutaanko lottoarvontaan?",
+            view=LotteryView(config.bet),
             ephemeral=True,
         )
 

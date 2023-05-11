@@ -2,11 +2,7 @@ import discord
 import json
 import sqlite3
 from discord import app_commands as apc
-
-with open("cfg/cfg.json", "r") as confile:
-    config = json.load(confile)
-owner = config["owner"]
-rattimes = config["rattimes"]
+from jobs.tasks.cache_config import config
 
 
 # This is used by the main program for populating the HuomentaResponses table
@@ -64,7 +60,7 @@ class Huomenta(apc.Group):
         ).fetchone()
         rats = db.execute(
             "SELECT COUNT(hour) FROM Huomenet WHERE uid = ? AND (hour >= ? OR hour < ?)",
-            [user.id, rattimes[0], rattimes[1]],
+            [user.id, config.rattimes[0], config.rattimes[1]],
         ).fetchone()
         userresponses = db.execute(
             "SELECT foundlist, rarelist, ultralist FROM HuomentaUserStats WHERE id=?",
@@ -166,7 +162,7 @@ class Huomenta(apc.Group):
         rarity: apc.Choice[int],
         ratness: apc.Choice[int],
     ):
-        if ctx.user.id == owner:
+        if ctx.user.id == config.owner:
             con = sqlite3.connect("data/database.db")
             db = con.cursor()
             if rarity.value == 2:
