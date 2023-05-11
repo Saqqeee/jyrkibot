@@ -68,7 +68,7 @@ class Drunk(apc.Group):
         con.close()
         await ctx.response.send_message("Hyvin juotu!", ephemeral=True)
 
-    # Feth blood alcohol content from database
+    # Fetch blood alcohol content from database
     @apc.command(name="check", description="Tarkista veren alkoholipitoisuus")
     async def howdrunk(self, ctx: discord.Interaction):
         con = sqlite3.connect("data/database.db")

@@ -49,16 +49,32 @@ async def timezone(
     )
 
 
-@apc.command(name="c7ck")
-async def cock(ctx: discord.Interaction, user: discord.Member = None):
-    random.seed(ctx.user.id if not user else user.id)
-    cocklength = f"{round(random.gauss(15,10),2)}"
-    if user == None or user == ctx.user:
-        await ctx.response.send_message(f"Munasi on {cocklength} cm pitkä.")
-    else:
-        await ctx.response.send_message(
-            f"Käyttäjän {user.display_name} muna on {cocklength} cm pitkä."
-        )
+class C7ck(apc.Group):
+    def __init__(self, client):
+        super().__init__()
+        self.client = client
+
+    @apc.command(name="length")
+    async def cock(self, ctx: discord.Interaction, user: discord.Member = None):
+        random.seed(ctx.user.id if not user else user.id)
+        cocklength = f"{round(random.gauss(15,10),2)}"
+        if user == None or user == ctx.user:
+            await ctx.response.send_message(f"Munasi on {cocklength} cm pitkä.")
+        else:
+            await ctx.response.send_message(
+                f"Käyttäjän {user.display_name} muna on {cocklength} cm pitkä."
+            )
+
+    @apc.command(name="balls")
+    async def balls(self, ctx: discord.Interaction, user: discord.Member = None):
+        random.seed(ctx.user.id if not user else user.id)
+        ballweight = f"{round(abs(random.gauss(48,100)),1)}"
+        if user == None or user == ctx.user:
+            await ctx.response.send_message(f"Pallisi painavat {ballweight} kg.")
+        else:
+            await ctx.response.send_message(
+                f"Käyttäjän {user.display_name} pallit painavat {ballweight} kg."
+            )
 
 
 class Request(apc.Group):

@@ -211,7 +211,7 @@ tree.add_command(drunk.Drunk(client), guild=gld)
 tree.add_command(utils.Request(client), guild=gld)
 tree.add_command(alarms.Alarm(client), guild=gld)
 tree.add_command(tools.Tools(client, owner), guild=gld)
-tree.add_command(utils.cock, guild=gld)
+tree.add_command(utils.C7ck(client), guild=gld)
 tree.add_command(utils.gpmems, guild=gld)
 tree.add_command(utils.timezone, guild=gld)
 
