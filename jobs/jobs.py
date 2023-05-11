@@ -27,8 +27,8 @@ async def tasks(client):
         if date.minute % 30 == 0:
             await cache_config.config.refreshconfig()
 
-        # Backup config every three hours
-        if date.hour % 3 == 0:
+        # Backup config every hour
+        if date.minute % 60 == 0:
             await cache_config.config.backup()
 
         # Sleep for a minute
