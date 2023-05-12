@@ -29,7 +29,7 @@ class Huomenta(apc.Group):
         self.client = client
 
     @apc.command(name="stats", description="Näytä omat tai jonkun muun huomenet.")
-    @apc.choices(hidden=[apc.Choice(name="True", value=1)])
+    @apc.choices(hidden=[apc.Choice(name="False", value=1)])
     async def stats(
         self,
         ctx: discord.Interaction,
@@ -43,7 +43,7 @@ class Huomenta(apc.Group):
             color=discord.Color.dark_magenta(),
         )
 
-        hidden = True if hidden != None else False
+        hidden = False if hidden != None else True
 
         # Fetch information from database for formatting the response
         con = sqlite3.connect("data/database.db")
