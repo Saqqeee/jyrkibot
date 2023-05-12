@@ -16,5 +16,6 @@ if [[ -d "${clone_dir}" ]]
 then
     cd "${clone_dir}"/
     "${github}" repo sync
+    pip install -r requirements.txt
     exec "${python_cmd}" main.py
 fi
