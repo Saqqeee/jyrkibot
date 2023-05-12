@@ -58,7 +58,7 @@ class HuomentaUserStats(Base):
     foundlist: Mapped[Optional[str]]
     rarelist: Mapped[Optional[str]]
     ultralist: Mapped[Optional[str]]
-    lastdate: Mapped[datetime]
+    lastdate: Mapped[Optional[datetime]]
 
 
 class LotteryPlayers(Base):
@@ -108,10 +108,10 @@ class Alarms(Base):
     __tablename__ = "Alarms"
 
     id: Mapped[int] = mapped_column(ForeignKey("Users.id"), primary_key=True)
-    time: Mapped[int]
-    weekdays: Mapped[str]
-    last: Mapped[datetime]
-    snooze: Mapped[int]
+    time: Mapped[Optional[int]]
+    weekdays: Mapped[Optional[str]]
+    last: Mapped[Optional[datetime]]
+    snooze: Mapped[Optional[int]]
 
 
 engine = create_engine("sqlite+pysqlite:///data/database.db", echo=True)
