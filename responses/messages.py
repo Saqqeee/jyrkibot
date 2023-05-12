@@ -20,6 +20,7 @@ async def goodmorning(msg: discord.Message):
         "INSERT OR IGNORE INTO Users (id, timezone) VALUES (?, ?)",
         [msg.author.id, "Europe/Helsinki"],
     )
+
     # If user has an entry in HuomentaUserStats and their cooldown has not yet passed, stop execution
     lastdate = db.execute(
         "SELECT lastdate FROM HuomentaUserStats WHERE id=?", [msg.author.id]
@@ -27,9 +28,11 @@ async def goodmorning(msg: discord.Message):
     if lastdate != None and datetime.fromisoformat(
         lastdate[0]
     ) > datetime.now() - timedelta(hours=config.huomentacooldown):
+        await msg.add_reaction("☕")
         con.commit()
         con.close()
         return
+
     # Otherwise get the current hour in user's timezone as well as datetime in UTC format
     tz = db.execute(
         "SELECT timezone FROM Users WHERE id=?", [msg.author.id]
