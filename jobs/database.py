@@ -114,4 +114,4 @@ class Alarms(Base):
     snooze: Mapped[Optional[int]]
 
 
-engine = create_engine("sqlite+pysqlite:///data/database.db", echo=True)
+engine = create_engine("sqlite+pysqlite:///data/database.db")

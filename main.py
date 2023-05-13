@@ -1,11 +1,13 @@
 import discord
-import sqlite3
+from sqlalchemy import select, func
+from sqlalchemy.orm import Session
 import json
 import os
 import logging
 import subprocess
 import sys
 from jobs.tasks.cache_config import config
+from jobs.database import engine, Base, HuomentaResponses
 
 handler = logging.FileHandler(filename="loki.log", encoding="utf-8", mode="w")
 
@@ -15,53 +17,20 @@ if not os.path.exists("data"):
 if not os.path.exists("data/files"):
     os.makedirs("data/files")
 
-con = sqlite3.connect("data/database.db")
-db = con.cursor()
-# Create tables if they don't already exist
-db.execute(
-    "CREATE TABLE if not exists Requests(id INTEGER PRIMARY KEY, uid INTEGER, message TEXT, date TEXT, type TEXT)"
-)
-db.execute("CREATE TABLE if not exists Users(id INTEGER PRIMARY KEY, timezone TEXT)")
-db.execute(
-    "CREATE TABLE if not exists Huomenet(id INTEGER PRIMARY KEY, uid INTEGER, hour INTEGER)"
-)
-db.execute(
-    "CREATE TABLE if not exists HuomentaResponses(id INTEGER PRIMARY KEY, response TEXT UNIQUE, rarity INTEGER, rat INTEGER)"
-)
-db.execute(
-    "CREATE TABLE if not exists HuomentaUserStats(id INTEGER PRIMARY KEY, foundlist TEXT, rarelist TEXT, ultralist TEXT, lastdate TEXT)"
-)
-db.execute(
-    "CREATE TABLE if not exists LotteryPlayers(id INTEGER PRIMARY KEY, credits INTEGER)"
-)
-db.execute(
-    "CREATE TABLE if not exists LotteryBets(id INTEGER PRIMARY KEY, uid INTEGER, roundid INTEGER, row TEXT)"
-)
-db.execute(
-    "CREATE TABLE if not exists LotteryWins(id INTEGER PRIMARY KEY, uid INTEGER, roundid INTEGER, payout INTEGER, date TEXT)"
-)
-db.execute(
-    "CREATE TABLE if not exists CurrentLottery(id INTEGER PRIMARY KEY, pool INTEGER, startdate TEXT)"
-)
-db.execute(
-    "CREATE TABLE if not exists Alcoholist(id INTEGER PRIMARY KEY, weight INTEGER, r REAL, bac REAL)"
-)
-db.execute(
-    "CREATE TABLE if not exists Alarms(id INTEGER PRIMARY KEY, time INTEGER, weekdays TEXT, last TEXT, snooze INTEGER)"
-)
+Base.metadata.create_all(engine)
 
 # Import additional modules only after the config and database are ready
 from slashcommands import huomenta, utils, lottery, drunk, alarms, tools
 from responses import messages, voice
 
 # If table HuomentaResponses is empty, populate it
-responseamount = db.execute("SELECT COUNT(*) FROM HuomentaResponses").fetchone()[0]
-if responseamount == 0:
-    with open("slashcommands/huomenta.json", "r", encoding="utf-8") as hfile:
-        huomenta.populatehuomenta(db, json.load(hfile))
-# Commit changes and close the connection for availability for commands.
-con.commit()
-con.close()
+with Session(engine) as db:
+    responseamount = db.scalars(
+        select(func.count()).select_from(HuomentaResponses)
+    ).one()
+    if responseamount == 0:
+        with open("slashcommands/huomenta.json", "r", encoding="utf-8") as hfile:
+            huomenta.populatehuomenta(db, json.load(hfile))
 
 intents = discord.Intents.default()
 intents.message_content = True

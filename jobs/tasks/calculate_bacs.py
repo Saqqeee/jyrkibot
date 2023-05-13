@@ -1,10 +1,18 @@
-import sqlite3
+from sqlalchemy import update
+from sqlalchemy.orm import Session
+from jobs.database import engine, Alcoholist
 
 
 async def calculate_bacs():
-    con = sqlite3.connect("data/database.db")
-    db = con.cursor()
-    db.execute("UPDATE Alcoholist SET bac=(bac-0.015) WHERE bac>=0.015")
-    db.execute("UPDATE Alcoholist SET bac=0 WHERE bac BETWEEN 0 AND 0.015")
-    con.commit()
-    con.close()
+    with Session(engine) as db:
+        db.execute(
+            update(Alcoholist)
+            .where(Alcoholist.bac >= 0.015)
+            .values(bac=(Alcoholist.bac - 0.015))
+        )
+        db.execute(
+            update(Alcoholist)
+            .where(0.0 < Alcoholist.bac, 0.015 > Alcoholist.bac)
+            .values(bac=0)
+        )
+        db.commit()

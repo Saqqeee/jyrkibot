@@ -1,9 +1,11 @@
 import discord
-import sqlite3
+from sqlalchemy import select, update, delete
+from sqlalchemy.orm import Session
 import json
 from datetime import datetime, date
 from discord import app_commands as apc
 from discord import ui
+from jobs.database import engine, Alarms
 
 
 class DaySelect(ui.Select):
@@ -22,22 +24,23 @@ class DaySelect(ui.Select):
         self.time = time
 
     async def callback(self, ctx: discord.Interaction):
-        self.con = sqlite3.connect("data/database.db")
-        self.db = self.con.cursor()
-        self.db.execute("INSERT OR IGNORE INTO Alarms(id) VALUES(?)", [ctx.user.id])
-        self.db.execute(
-            "UPDATE Alarms SET time=?, weekdays=?, snooze=0 WHERE id=?",
-            [self.time, json.dumps(self.values), ctx.user.id],
-        )
-        last = self.db.execute(
-            "SELECT last FROM Alarms WHERE id=?", [ctx.user.id]
-        ).fetchone()[0]
-        if not last:
-            self.db.execute(
-                "UPDATE Alarms SET last=? WHERE id=?", [datetime.now(), ctx.user.id]
+        with Session(engine) as db:
+            isinanal = db.scalar(select(select(Alarms).exists()))
+            if not isinanal:
+                db.add(Alarms(id=ctx.user.id))
+            db.execute(
+                update(Alarms)
+                .where(Alarms.id == ctx.user.id)
+                .values(time=self.time, weekdays=json.dumps(self.values), snooze=0)
             )
-        self.con.commit()
-        self.con.close()
+            last = db.scalar(select(Alarms.last).where(id == ctx.user.id))
+            if not last:
+                db.execute(
+                    update(Alarms)
+                    .where(Alarms.id == ctx.user.id)
+                    .values(last=datetime.now())
+                )
+            db.commit()
         await ctx.response.edit_message(content="Herätys asetettu", view=None)
 
 
@@ -76,11 +79,9 @@ class AlarmDelConfirm(ui.View):
 
     @discord.ui.button(label="Kyllä", style=discord.ButtonStyle.success)
     async def delconfirm(self, ctx: discord.Interaction, button_obj: discord.ui.Button):
-        self.con = sqlite3.connect("data/database.db")
-        self.db = self.con.cursor()
-        self.db.execute("DELETE FROM Alarms WHERE id=?", [ctx.user.id])
-        self.con.commit()
-        self.con.close()
+        with Session(engine) as db:
+            db.execute(delete(Alarms).where(Alarms.id == ctx.user.id))
+            db.commit()
         await ctx.response.edit_message(content="Herätys poistettu.", view=None)
 
     @discord.ui.button(label="Ei", style=discord.ButtonStyle.danger)
@@ -101,13 +102,16 @@ class Alarm(apc.Group):
 
     @apc.command(name="remove", description="Poista herätys.")
     async def delalarm(self, ctx: discord.Interaction):
-        self.con = sqlite3.connect("data/database.db")
-        self.db = self.con.cursor()
-        self.curalarm = self.db.execute(
-            "SELECT * FROM Alarms WHERE id=?", [ctx.user.id]
-        ).fetchone()
-        self.con.close()
-        if not self.curalarm:
+        with Session(engine) as db:
+            curalarm = db.execute(select(Alarms).where(Alarms.id == ctx.user.id)).all()
+
+        # self.con = sqlite3.connect("data/database.db")
+        # self.db = self.con.cursor()
+        # self.curalarm = self.db.execute(
+        #    "SELECT * FROM Alarms WHERE id=?", [ctx.user.id]
+        # ).fetchone()
+        # self.con.close()
+        if not curalarm:
             await ctx.response.send_message(
                 "Sinulla ei ole herätystä jota poistaa.", ephemeral=True
             )

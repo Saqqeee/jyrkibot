@@ -1,9 +1,11 @@
 import discord
 from discord import app_commands as apc
-import sqlite3
+from sqlalchemy import select, update
+from sqlalchemy.orm import Session
 import random
 from datetime import datetime
 from jobs.tasks.cache_config import config
+from jobs.database import engine, Users, Requests
 
 
 @apc.command(name="roleinfo", description="Näytä roolin tiedot")
@@ -28,17 +30,19 @@ async def gpmems(ctx: discord.Interaction, role: discord.Role):
 async def timezone(
     ctx: discord.Interaction, timezones: discord.app_commands.Choice[str]
 ):
-    con = sqlite3.connect("data/database.db")
-    db = con.cursor()
-    db.execute(
-        "INSERT OR IGNORE INTO Users (id, timezone) VALUES (?, ?)",
-        [ctx.user.id, timezones.value],
-    )
-    db.execute(
-        "UPDATE Users SET timezone = ? WHERE id = ?", [timezones.value, ctx.user.id]
-    )
-    con.commit()
-    con.close()
+    with Session(engine) as db:
+        userexists = db.scalar(
+            select(select(Users).where(Users.id == ctx.user.id).exists())
+        )
+        if not userexists:
+            db.add(Users(id=ctx.user.id, timezone=timezones.value))
+        else:
+            db.execute(
+                update(Users)
+                .where(Users.id == ctx.user.id)
+                .values(timezone=timezones.value)
+            )
+        db.commit()
     await ctx.response.send_message(
         f"{ctx.user.mention}: Aikavyöhykkeeksi vaihdettu {timezones.name}.",
         ephemeral=True,
@@ -81,15 +85,11 @@ class Request(apc.Group):
     @apc.command(name="add", description="Pyydä toimintoa")
     async def requestadd(self, ctx: discord.Interaction, msg: apc.Range[str, 1, 100]):
         date = datetime.now()
-        con = sqlite3.connect("data/database.db")
-        db = con.cursor()
-        req = db.execute(
-            "INSERT INTO Requests(uid, message, date, type) VALUES(?, ?, ?, 'new')",
-            [ctx.user.id, msg, date],
-        )
-        con.commit()
-        con.close()
-        await ctx.response.send_message(f"Lisätty pyyntö `{req.lastrowid}`:\n> {msg}")
+        with Session(engine) as db:
+            db.add(Requests(uid=ctx.user.id, message=msg, date=date, type="new"))
+            reqid = db.scalar(select(Requests.id).order_by(Requests.id.desc()).limit(1))
+            db.commit()
+        await ctx.response.send_message(f"Lisätty pyyntö `{reqid}`:\n> {msg}")
 
     @apc.command(name="list", description="Näytä kaikki pyynnöt")
     @apc.choices(
@@ -101,28 +101,33 @@ class Request(apc.Group):
         ]
     )
     async def requestlist(self, ctx: discord.Interaction, type: apc.Choice[str] = None):
-        con = sqlite3.connect("data/database.db")
-        db = con.cursor()
-        if not type:
-            frlist = db.execute(
-                "SELECT id, uid, message, date, type FROM Requests"
-            ).fetchall()
-        else:
-            frlist = db.execute(
-                "SELECT id, uid, message, date, type FROM Requests WHERE type=?",
-                [type.value],
-            ).fetchall()
-        con.close()
         embed = discord.Embed(
             title="Pyydetyt ominaisuudet", color=discord.Color.dark_magenta()
         )
-        for req in frlist:
-            date = datetime.fromisoformat(req[3])
-            embed.add_field(
-                name=f"**{req[0]}**, **{discord.utils.get(ctx.guild.members, id=req[1]).display_name}**: {date.strftime('%d.%m.%Y')} ({req[4]})",
-                value=req[2],
-                inline=False,
-            )
+        with Session(engine) as db:
+            if not type:
+                frlist = select(
+                    Requests.id,
+                    Requests.uid,
+                    Requests.message,
+                    Requests.date,
+                    Requests.type,
+                )
+            else:
+                frlist = select(
+                    Requests.id,
+                    Requests.uid,
+                    Requests.message,
+                    Requests.date,
+                    Requests.type,
+                ).where(Requests.type == type.value)
+            for req in db.execute(frlist).fetchall():
+                print(req)
+                embed.add_field(
+                    name=f"**{req[0]}**, **{discord.utils.get(ctx.guild.members, id=req[1]).display_name}**: {req[3]} ({req[4]})",
+                    value=req[2],
+                    inline=False,
+                )
         await ctx.response.send_message(embed=embed, ephemeral=True)
 
     @apc.command(name="update", description="Owner only command")
@@ -138,17 +143,11 @@ class Request(apc.Group):
         self, ctx: discord.Interaction, id: int, type: apc.Choice[str]
     ):
         if ctx.user.id == config.owner:
-            con = sqlite3.connect("data/database.db")
-            db = con.cursor()
-            check = db.execute("SELECT * FROM Requests WHERE id=?", [id]).fetchone()
-            if not check:
-                await ctx.response.send_message(
-                    "Ei ole tuollaista id:tä.", ephemeral=True
+            with Session(engine) as db:
+                db.execute(
+                    update(Requests).where(Requests.id == id).values(type=type.value)
                 )
-                return
-            db.execute("UPDATE Requests SET type=? WHERE id=?", [type.value, id])
-            con.commit()
-            con.close()
+                db.commit()
             await ctx.response.send_message(
                 f"Updated request `{id}` to type {type.name}."
             )

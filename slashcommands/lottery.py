@@ -74,9 +74,7 @@ class Lottery(apc.Group):
     @apc.command(name="setchannel", description="Owner only command")
     async def lotterychannel(self, ctx: discord.Interaction):
         if ctx.user.id == config.owner:
-            config["lotterychannel"] = ctx.channel_id
-            with open("cfg/cfg.json", "w+") as confile:
-                json.dump(config, confile)
+            config.updateconfig("lotterychannel", ctx.channel.id)
             await ctx.response.send_message(
                 "Lotto arvotaan jatkossa tällä kanavalla", ephemeral=True
             )
