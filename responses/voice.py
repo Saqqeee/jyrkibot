@@ -1,5 +1,5 @@
 import discord
-import nacl
+import nacl  # DO NOT remove this import, even if it is unused! It is used by Discord for the voice connection.
 import os
 
 
