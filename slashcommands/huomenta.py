@@ -54,20 +54,23 @@ class Huomenta(apc.Group):
             if not userexists:
                 await ctx.response.send_message("Käyttäjää ei löydetty", ephemeral=True)
                 return
+
             times = db.scalar(
                 select(func.count())
                 .select_from(Huomenet)
                 .where(Huomenet.uid == user.id)
             )
+
             rats = db.scalar(
-                select(func.count(Huomenet.hour)).where(
-                    Huomenet.uid == user.id
-                    and (
-                        Huomenet.hour >= config.rattimes[0]
-                        or Huomenet.hour < config.rattimes[1]
-                    )
+                select(func.count())
+                .select_from(Huomenet)
+                .where(Huomenet.uid == user.id)
+                .filter(
+                    (Huomenet.hour >= config.rattimes[0])
+                    | (Huomenet.hour < config.rattimes[1])
                 )
             )
+
             userresponses = db.execute(
                 select(
                     HuomentaUserStats.foundlist,
@@ -75,7 +78,7 @@ class Huomenta(apc.Group):
                     HuomentaUserStats.ultralist,
                 ).where(HuomentaUserStats.id == user.id)
             ).one()
-            print(userresponses)
+
             morosfound = (
                 len(list(json.loads(userresponses[0])))
                 if userresponses[0] is not None
@@ -91,6 +94,7 @@ class Huomenta(apc.Group):
                 if userresponses[2] is not None
                 else 0
             )
+
             morototal = db.scalar(
                 select(func.count())
                 .select_from(HuomentaResponses)
