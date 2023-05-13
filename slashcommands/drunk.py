@@ -63,7 +63,7 @@ class Drunk(apc.Group):
                 select(Alcoholist.weight, Alcoholist.r).where(
                     Alcoholist.id == ctx.user.id
                 )
-            ).one()
+            ).fetchone()
             if not info:
                 await ctx.response.send_message(
                     f"Käyttäjääsi ei löydetty! Aseta tietosi komennolla /{self.settings.qualified_name}",
