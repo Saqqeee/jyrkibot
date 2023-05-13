@@ -106,9 +106,6 @@ class Config:
 
         Value: The value to store or change
         """
-        if self.__getattribute__(key) == value:
-            print("The attribute you're trying to edit already has this value.")
-            return
         self.__setattr__(key, value)
 
         with open(self.file, "r") as confile:
