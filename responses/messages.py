@@ -91,9 +91,9 @@ async def goodmorning(msg: discord.Message):
                 )
             )
         responses = db.execute(
-            select(HuomentaResponses.id, HuomentaResponses.response).where(
-                HuomentaResponses.rarity == rarity and HuomentaResponses.rat == rat
-            )
+            select(HuomentaResponses.id, HuomentaResponses.response)
+            .where(HuomentaResponses.rarity == rarity)
+            .where(HuomentaResponses.rat == rat)
         ).all()
 
     if userresponses != None:
@@ -103,7 +103,6 @@ async def goodmorning(msg: discord.Message):
 
     # Gather a list of available responses by rarity and ratness and choose one of them randomly,
     # saving the response and its id in separate variables
-    print(responses)
     response = random.choice(responses)
     respid = response[0]
     respmsg = response[1]
