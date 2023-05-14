@@ -33,7 +33,7 @@ async def draw(date: datetime, client: discord.Client):
             await channel.send("Uusi lottosessio aloitettu")
             return
         if (date.hour < 17) or (
-            date - datetime.fromisoformat(startdate[0]) < timedelta(hours=12)
+            date - datetime.fromisoformat(startdate) < timedelta(hours=12)
         ):
             return
 
