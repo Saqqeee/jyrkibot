@@ -137,11 +137,14 @@ class Lottery(apc.Group):
                 select(LotteryPlayers.credits).where(LotteryPlayers.id == ctx.user.id)
             )
             lastbet = db.scalar(
-                select(LotteryPlayers.credits).where(LotteryPlayers.id == ctx.user.id)
+                select(LotteryBets.roundid)
+                .where(LotteryBets.uid == ctx.user.id)
+                .order_by(LotteryBets.id.desc())
+                .limit(1)
             )
             currentround = db.scalar(select(CurrentLottery.id))
 
-        if lastbet is not None and lastbet == currentround:
+        if lastbet and lastbet == currentround:
             await ctx.response.send_message(
                 "Olet jo osallistunut tähän lottokierrokseen!", ephemeral=True
             )
