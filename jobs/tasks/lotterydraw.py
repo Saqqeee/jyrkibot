@@ -32,9 +32,7 @@ async def draw(date: datetime, client: discord.Client):
             db.commit()
             await channel.send("Uusi lottosessio aloitettu")
             return
-        if (date.hour < 17) or (
-            date - datetime.fromisoformat(startdate) < timedelta(hours=12)
-        ):
+        if (date.hour < 17) or (date - startdate < timedelta(hours=12)):
             return
 
         round, pool = db.execute(select(CurrentLottery.id, CurrentLottery.pool)).one()
