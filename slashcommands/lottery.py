@@ -29,8 +29,9 @@ class LotteryNumbers(discord.ui.Select):
                 )
             )
             db.commit()
-        await ctx.response.send_message(
-            f"Rivisi on tallennettu. Onnea arvontaan!", ephemeral=True
+        await ctx.response.edit_message(
+            content=f"Rivisi **{', '.join(self.values)}** on tallennettu. Onnea arvontaan!",
+            view=None,
         )
 
 
