@@ -42,7 +42,7 @@ async def alarm(date: datetime, client: discord.Client):
     with Session(engine) as db:
         allalarms = db.execute(
             select(Alarms.id, Alarms.time, Alarms.weekdays, Alarms.last, Alarms.snooze)
-        )
+        ).fetchall()
         for row in allalarms:
             id = row[0]
             time = row[1]
