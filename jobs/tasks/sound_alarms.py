@@ -25,11 +25,13 @@ class SnoozeButton(discord.ui.View):
 
 async def snooze(date: datetime, client: discord.Client):
     with Session(engine) as db:
-        allalarms = db.scalars(select(Alarms).where(Alarms.snooze == 1)).fetchall()
+        allalarms = db.execute(
+            select(Alarms.id, Alarms.last).where(Alarms.snooze == 1)
+        ).fetchall()
     for row in allalarms:
         id = row[0]
-        last = row[3]
-        if date - datetime.fromisoformat(last) < timedelta(minutes=1):
+        last = row[1]
+        if date - last < timedelta(minutes=1):
             continue
         user = client.get_user(id)
         msg = await user.send(
@@ -49,8 +51,7 @@ async def alarm(date: datetime, client: discord.Client):
             weekdays = json.loads(row[2])
             last = row[3]
             snoozer = row[4]
-            with Session(engine) as db:
-                tz = db.scalar(select(Users.timezone).where(Users.id == id))
+            tz = db.scalar(select(Users.timezone).where(Users.id == id))
             if not tz:
                 tz = "Etc/UTC"
             currenthour = datetime.now(pytz.timezone(tz)).hour
@@ -64,13 +65,10 @@ async def alarm(date: datetime, client: discord.Client):
                 continue
             else:
                 user = client.get_user(id)
-                with Session(engine) as db:
-                    db.execute(
-                        update(Alarms)
-                        .where(Alarms.id == id)
-                        .values(last=date, snooze=1)
-                    )
-                    db.commit()
+                db.execute(
+                    update(Alarms).where(Alarms.id == id).values(last=date, snooze=1)
+                )
+                db.commit()
                 await user.send(
                     content=f"ootko jo ylhäällä vitun vätys?",
                     view=SnoozeButton(),
