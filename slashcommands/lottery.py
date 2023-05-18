@@ -19,6 +19,54 @@ from jobs.database import (
 ### UI COMPONENTS ###
 
 
+class RerollButton(discord.ui.View):
+    def __init__(self):
+        super().__init__()
+
+    @discord.ui.button(
+        emoji="🎲", label="Osallistu uudelleen", style=discord.ButtonStyle.blurple
+    )
+    async def reroll(self, ctx: discord.Interaction, button_obj: discord.ui.Button):
+        """This should be the same as the makebet command"""
+        # Get user's balance, user's last participated round and current round
+        with Session(engine) as db:
+            tili = db.scalar(
+                select(LotteryPlayers.credits).where(LotteryPlayers.id == ctx.user.id)
+            )
+            lastbet = db.scalar(
+                select(LotteryBets.roundid)
+                .where(LotteryBets.uid == ctx.user.id)
+                .order_by(LotteryBets.id.desc())
+                .limit(1)
+            )
+            currentround = db.scalar(select(CurrentLottery.id))
+
+        # If user is already participating in this round, send an error message and return
+        if lastbet and lastbet == currentround:
+            await ctx.response.send_message(
+                "Olet jo osallistunut tähän lottokierrokseen!", ephemeral=True
+            )
+            return
+
+        tili = 0 if not tili else tili
+
+        # If balance is not enough, send an error message and return
+        if config.bet > tili:
+            await ctx.response.send_message(
+                f"Et ole noin rikas. Tilisi saldo on {tili}, kun osallistuminen vaatii {config.bet}.",
+                ephemeral=True,
+            )
+            return
+
+        # Send a UI component for confirming participation
+        # The UI component LotteryView handles the rest of this interaction
+        await ctx.response.send_message(
+            f"Arvontaan osallistuminen maksaa {config.bet} koppelia. Tilisi saldo on {tili}. Osallistutaanko lottoarvontaan?",
+            view=LotteryView(config.bet),
+            ephemeral=True,
+        )
+
+
 class LotteryNumbers(discord.ui.Select):
     """Select component that takes a min and max of 7 values"""
 

@@ -5,6 +5,7 @@ import math
 import json
 import random
 from datetime import datetime, timedelta
+from slashcommands import lottery
 from jobs.tasks.cache_config import config
 from jobs.database import (
     engine,
@@ -127,5 +128,7 @@ async def draw(date: datetime, client: discord.Client):
     )
 
     await channel.send(
-        content="Arvonnat suoritettu! Nähdään huomenna samaan aikaan.", embed=embed
+        content="Arvonnat suoritettu! Nähdään huomenna samaan aikaan.",
+        embed=embed,
+        view=lottery.RerollButton(),
     )
