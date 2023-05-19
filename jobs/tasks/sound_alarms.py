@@ -31,7 +31,7 @@ async def snooze(date: datetime, client: discord.Client):
     for row in allalarms:
         id = row[0]
         last = row[1]
-        if date - last < timedelta(minutes=1):
+        if date - last < timedelta(hours=1):
             continue
         user = client.get_user(id)
         msg = await user.send(
