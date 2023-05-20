@@ -21,13 +21,14 @@ from jobs.database import (
 
 class RerollButton(discord.ui.View):
     def __init__(self):
-        super().__init__()
+        super().__init__(timeout=86400)
 
     @discord.ui.button(
         emoji="🎲", label="Osallistu uudelleen", style=discord.ButtonStyle.blurple
     )
     async def reroll(self, ctx: discord.Interaction, button_obj: discord.ui.Button):
         """This should be the same as the makebet command"""
+
         # Get user's balance, user's last participated round and current round
         with Session(engine) as db:
             tili = db.scalar(
