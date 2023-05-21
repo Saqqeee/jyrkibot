@@ -1,6 +1,7 @@
 import discord
 from discord import app_commands as apc
 import json
+import random
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 from jobs.tasks.cache_config import config
@@ -13,7 +14,7 @@ from jobs.database import (
 )
 
 
-### TODO: Allow the user to select multiple lines, allow the user to subscribe for a period of time
+### TODO: Allow the user to select multiple lines, add possibility for subscriptions
 
 
 ### UI COMPONENTS ###
@@ -27,45 +28,9 @@ class RerollButton(discord.ui.View):
         emoji="🎲", label="Osallistu uudelleen", style=discord.ButtonStyle.blurple
     )
     async def reroll(self, ctx: discord.Interaction, button_obj: discord.ui.Button):
-        """This should be the same as the makebet command"""
+        """Presents the player with buttons for selecting their new line"""
 
-        # Get user's balance, user's last participated round and current round
-        with Session(engine) as db:
-            tili = db.scalar(
-                select(LotteryPlayers.credits).where(LotteryPlayers.id == ctx.user.id)
-            )
-            lastbet = db.scalar(
-                select(LotteryBets.roundid)
-                .where(LotteryBets.uid == ctx.user.id)
-                .order_by(LotteryBets.id.desc())
-                .limit(1)
-            )
-            currentround = db.scalar(select(CurrentLottery.id))
-
-        # If user is already participating in this round, send an error message and return
-        if lastbet and lastbet == currentround:
-            await ctx.response.send_message(
-                "Olet jo osallistunut tähän lottokierrokseen!", ephemeral=True
-            )
-            return
-
-        tili = 0 if not tili else tili
-
-        # If balance is not enough, send an error message and return
-        if config.bet > tili:
-            await ctx.response.send_message(
-                f"Et ole noin rikas. Tilisi saldo on {tili}, kun osallistuminen vaatii {config.bet}.",
-                ephemeral=True,
-            )
-            return
-
-        # Send a UI component for confirming participation
-        # The UI component LotteryView handles the rest of this interaction
-        await ctx.response.send_message(
-            f"Arvontaan osallistuminen maksaa {config.bet} koppelia. Tilisi saldo on {tili}. Osallistutaanko lottoarvontaan?",
-            view=LotteryView(config.bet),
-            ephemeral=True,
-        )
+        await betbuttons(ctx)
 
 
 class LotteryNumbers(discord.ui.Select):
@@ -75,23 +40,51 @@ class LotteryNumbers(discord.ui.Select):
         super().__init__(options=options, min_values=7, max_values=7)
 
     async def callback(self, ctx: discord.Interaction):
-        with Session(engine) as db:
-            # Get current round id
-            self.roundid = db.scalar(select(CurrentLottery.id))
+        await addline(ctx, self.values)
 
-            # Insert selected line into database
-            db.add(
-                LotteryBets(
-                    uid=ctx.user.id, roundid=self.roundid, row=json.dumps(self.values)
-                )
-            )
-            db.commit()
 
-        # Edit the response
-        await ctx.response.edit_message(
-            content=f"Rivisi **{', '.join(self.values)}** on tallennettu. Onnea arvontaan!",
-            view=None,
-        )
+class NewLineButton(discord.ui.Button):
+    def __init__(self):
+        super().__init__(label="Uusi rivi", style=discord.ButtonStyle.blurple)
+
+    async def callback(self, ctx: discord.Interaction):
+        """Select a new line to participate with"""
+
+        # Initialize a LotteryNumbers view for the followup
+        options = []
+        for i in range(1, 25):
+            options.append(discord.SelectOption(label=f"{i}", value=i))
+        select = LotteryNumbers(options=options)
+        view_select = discord.ui.View()
+        view_select.add_item(select)
+
+        # Edit response and continue to selecting numbers
+        # Change the view to LotteryNumbers
+        await ctx.response.edit_message(content="Valitse lottorivi", view=view_select)
+
+
+class SameLineButton(discord.ui.Button):
+    """Participate with the previous line"""
+
+    def __init__(self, line):
+        super().__init__(label="Edellinen rivi", style=discord.ButtonStyle.blurple)
+        self.line = json.loads(line)
+
+    async def callback(self, ctx: discord.Interaction):
+        await addline(ctx, self.line)
+
+
+class RandLineButton(discord.ui.Button):
+    def __init__(self):
+        super().__init__(label="Satunnainen rivi", style=discord.ButtonStyle.blurple)
+
+    async def callback(self, ctx: discord.Interaction):
+        """Participate with random line"""
+
+        self.line = random.sample([*range(1, 25)], k=7)
+        for i in range(len(self.line)):
+            self.line[i] = str(self.line[i])
+        await addline(ctx, self.line)
 
 
 class LotteryView(discord.ui.View):
@@ -105,14 +98,6 @@ class LotteryView(discord.ui.View):
     async def betconfirm(self, ctx: discord.Interaction, button_obj: discord.ui.Button):
         """The 'yes' button"""
 
-        # Initialize a LotteryNumbers view for the followup
-        options = []
-        for i in range(1, 25):
-            options.append(discord.SelectOption(label=f"{i}", value=i))
-        select = LotteryNumbers(options=options)
-        view_select = discord.ui.View()
-        view_select.add_item(select)
-
         with Session(engine) as db:
             # Reduce user's balance by a set amount
             db.execute(
@@ -125,10 +110,20 @@ class LotteryView(discord.ui.View):
                 update(CurrentLottery).values(pool=(CurrentLottery.pool + self.bet))
             )
             db.commit()
+            # Get user's previous line
+            prevline = db.scalar(
+                select(LotteryBets.row)
+                .where(LotteryBets.uid == ctx.user.id)
+                .where(LotteryBets.roundid == (CurrentLottery.id - 1))
+            )
 
-        # Edit response and continue to selecting numbers
-        # Change the view to LotteryNumbers
-        await ctx.response.edit_message(content="Valitse lottorivi", view=view_select)
+        selectbuttons = discord.ui.View()
+        if prevline:
+            selectbuttons.add_item(SameLineButton(line=prevline))
+        selectbuttons.add_item(NewLineButton())
+        selectbuttons.add_item(RandLineButton())
+
+        await ctx.response.edit_message(content="Valitse yksi", view=selectbuttons)
 
     @discord.ui.button(label="Ei", style=discord.ButtonStyle.danger)
     async def betdecline(self, ctx: discord.Interaction, button_obj: discord.ui.Button):
@@ -229,43 +224,7 @@ class Lottery(apc.Group):
     async def makebet(self, ctx: discord.Interaction):
         """Slash command for participating in the ongoing round of lottery"""
 
-        # Get user's balance, user's last participated round and current round
-        with Session(engine) as db:
-            tili = db.scalar(
-                select(LotteryPlayers.credits).where(LotteryPlayers.id == ctx.user.id)
-            )
-            lastbet = db.scalar(
-                select(LotteryBets.roundid)
-                .where(LotteryBets.uid == ctx.user.id)
-                .order_by(LotteryBets.id.desc())
-                .limit(1)
-            )
-            currentround = db.scalar(select(CurrentLottery.id))
-
-        # If user is already participating in this round, send an error message and return
-        if lastbet and lastbet == currentround:
-            await ctx.response.send_message(
-                "Olet jo osallistunut tähän lottokierrokseen!", ephemeral=True
-            )
-            return
-
-        tili = 0 if not tili else tili
-
-        # If balance is not enough, send an error message and return
-        if config.bet > tili:
-            await ctx.response.send_message(
-                f"Et ole noin rikas. Tilisi saldo on {tili}, kun osallistuminen vaatii {config.bet}.",
-                ephemeral=True,
-            )
-            return
-
-        # Send a UI component for confirming participation
-        # The UI component LotteryView handles the rest of this interaction
-        await ctx.response.send_message(
-            f"Arvontaan osallistuminen maksaa {config.bet} koppelia. Tilisi saldo on {tili}. Osallistutaanko lottoarvontaan?",
-            view=LotteryView(config.bet),
-            ephemeral=True,
-        )
+        await betbuttons(ctx)
 
     @apc.command(name="gift", description="Lahjoita koppeleita jollekin toiselle.")
     async def gift(
@@ -330,3 +289,69 @@ class Lottery(apc.Group):
             f"Käyttäjän {recipient.mention} tilille siirretty **{amount}** koppelia.",
             ephemeral=True,
         )
+
+
+### FUNCTIONS ###
+
+
+async def betbuttons(ctx: discord.Interaction):
+    """Function used by the makebet command and reroll button."""
+
+    # Get user's balance, user's last participated round and current round
+    with Session(engine) as db:
+        tili = db.scalar(
+            select(LotteryPlayers.credits).where(LotteryPlayers.id == ctx.user.id)
+        )
+        lastbet = db.scalar(
+            select(LotteryBets.roundid)
+            .where(LotteryBets.uid == ctx.user.id)
+            .order_by(LotteryBets.id.desc())
+            .limit(1)
+        )
+        currentround = db.scalar(select(CurrentLottery.id))
+
+    # If user is already participating in this round, send an error message and return
+    if lastbet and lastbet == currentround:
+        await ctx.response.send_message(
+            "Olet jo osallistunut tähän lottokierrokseen!", ephemeral=True
+        )
+        return
+
+    tili = 0 if not tili else tili
+
+    # If balance is not enough, send an error message and return
+    if config.bet > tili:
+        await ctx.response.send_message(
+            f"Et ole noin rikas. Tilisi saldo on {tili}, kun osallistuminen vaatii {config.bet}.",
+            ephemeral=True,
+        )
+        return
+
+    # Send a UI component for confirming participation
+    # The UI component LotteryView handles the rest of this interaction
+    await ctx.response.send_message(
+        f"Arvontaan osallistuminen maksaa {config.bet} koppelia. Tilisi saldo on {tili}. Osallistutaanko lottoarvontaan?",
+        view=LotteryView(config.bet),
+        ephemeral=True,
+    )
+
+
+async def addline(ctx: discord.Interaction, line: list):
+    def sortering(e):
+        return int(e)
+
+    line.sort(key=sortering)
+
+    with Session(engine) as db:
+        # Get current round id
+        roundid = db.scalar(select(CurrentLottery.id))
+
+        # Insert selected line into database
+        db.add(LotteryBets(uid=ctx.user.id, roundid=roundid, row=json.dumps(line)))
+        db.commit()
+
+    # Edit the response
+    await ctx.response.edit_message(
+        content=f"Rivisi **{', '.join(line)}** on tallennettu. Onnea arvontaan!",
+        view=None,
+    )
