@@ -52,7 +52,6 @@ async def on_ready():
     from jobs import jobs
 
     await jobs.startjobs(client)
-    print("Tasks started")
 
 
 @client.event
