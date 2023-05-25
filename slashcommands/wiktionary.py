@@ -92,6 +92,7 @@ class Wiktionary(apc.Group):
         firstfound = False
 
         for tag in tags:
+            tag: BeautifulSoup
             # If we have a title and value for an embed field and we're already at the next heading,
             # add the field to the embed and reset the variables
             if title and cont and (tag.name in ["h2", "h3", "h4"]):
@@ -115,7 +116,10 @@ class Wiktionary(apc.Group):
                 if langcodes.Language.get(
                     langcodes.Language.find(tag.span["id"])
                 ).is_valid():
-                    embed.description = tag.span["id"]
+                    print(tag.find("span", {"class": "mw-headline"}))
+                    embed.description = tag.find(
+                        "span", {"class": "mw-headline"}
+                    ).string
                     firstfound = True
                     continue
 
