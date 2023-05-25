@@ -20,7 +20,7 @@ if not os.path.exists("data/files"):
 Base.metadata.create_all(engine)
 
 # Import additional modules only after the config and database are ready
-from slashcommands import huomenta, utils, lottery, drunk, alarms, tools
+from slashcommands import huomenta, utils, lottery, drunk, alarms, tools, wiktionary
 from responses import messages, voice
 
 # If table HuomentaResponses is empty, populate it
@@ -133,6 +133,7 @@ tree.add_command(utils.Request(client), guild=gld)
 tree.add_command(alarms.Alarm(client), guild=gld)
 tree.add_command(tools.Tools(client), guild=gld)
 tree.add_command(utils.C7ck(client), guild=gld)
+tree.add_command(wiktionary.Wiktionary(client), guild=gld)
 tree.add_command(utils.gpmems, guild=gld)
 tree.add_command(utils.timezone, guild=gld)
 
