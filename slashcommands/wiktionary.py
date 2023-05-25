@@ -116,7 +116,6 @@ class Wiktionary(apc.Group):
                 if langcodes.Language.get(
                     langcodes.Language.find(tag.span["id"])
                 ).is_valid():
-                    print(tag.find("span", {"class": "mw-headline"}))
                     embed.description = tag.find(
                         "span", {"class": "mw-headline"}
                     ).string
@@ -141,12 +140,31 @@ class Wiktionary(apc.Group):
                         # Handle the contents of the list item element separately because of formatting stuff
                         x = subtag.contents
                         for part in x:
+                            string = ""
+                            # Is the item a string or a HTML tag?
                             try:
                                 part.name
+
+                            # If it is a string, add it as itself. If it is NoneType, add an empty string.
                             except AttributeError:
                                 string = part or ""
+
+                            # What to do if it is a HTML tag
                             else:
-                                string = part.string or ""
+                                # If if is a description list (used for quotes and examples in Wiktionary),
+                                # add the items separately as indented blockquotes
+                                if part.name == "dl":
+                                    for dd in part.contents:
+                                        text = dd.get_text().rstrip()
+                                        if not text:
+                                            continue
+                                        string += f"\n    > *{text}*"
+                                    cont += string
+                                    continue
+
+                                # In any other case, just add the text content of the tag.
+                                else:
+                                    string = part.string or ""
                             cont += string.rstrip("\n")
 
         # Add a final field if the loop runs out. It doesn't matter if this is empty,
