@@ -38,9 +38,9 @@ class Wiktionary(apc.Group):
         if lang != self.lang:
             self.lang = lang
 
-        # Assign variables: data for the MediaWikiPage result, url for the page URL.
-        data = self.mwa.page(title=title).html
-        url = f"https://{self.lang.language}.wiktionary.org/wiki/{title}"
+        # Assign variables: data for the MediaWikiPage result, url for the page URL
+        data = self.mwa.page(title=title)
+        url = f"https://{self.lang.language}.wiktionary.org/wiki/{data.title}"
 
         return data, url
 
@@ -78,10 +78,12 @@ class Wiktionary(apc.Group):
             return
 
         # Initialize followup embed
-        embed = discord.Embed(title=title, color=discord.Color.dark_magenta(), url=url)
+        embed = discord.Embed(
+            title=data.title, color=discord.Color.dark_magenta(), url=url
+        )
 
         # Parse the returned HTML and define the tags to look for
-        parsed = BeautifulSoup(data, "html.parser")
+        parsed = BeautifulSoup(data.html, "html.parser")
         tags = parsed(["h2", "h3", "h4", "ol"])
 
         # Define empty variables for embed field title and content
