@@ -21,7 +21,7 @@ Base.metadata.create_all(engine)
 
 # Import additional modules only after the config and database are ready
 from slashcommands import huomenta, utils, lottery, drunk, alarms, tools, wiktionary
-from responses import messages, voice
+from responses import messages, voice, links
 
 # If table HuomentaResponses is empty, populate it
 with Session(engine) as db:
@@ -63,6 +63,7 @@ async def on_message(msg: discord.Message):
         return
     if msg.content.lower() == "huomenta":
         await messages.goodmorning(msg)
+    await links.detracker(msg)
 
 
 @client.event
