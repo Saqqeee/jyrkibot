@@ -10,12 +10,6 @@ class Wiktionary(apc.Group):
     def __init__(self, client):
         super().__init__()
         self.client = client
-        self.lang = langcodes.Language.get("fi")
-        self.mwa = MediaWiki(
-            url=f"https://{self.lang}.wiktionary.org/w/api.php",
-            lang=self.lang.language,
-            user_agent=f"jyrkibot/0.1 (https://github.com/Saqqeee) pymediawiki/{VERSION}",
-        )
 
     async def fetch_page(self, title: str, lang: str):
         """
@@ -30,17 +24,18 @@ class Wiktionary(apc.Group):
         Returns a tuple containing the MediaWikiPage object and the page URL
         """
 
-        # Convert arguments into lowercase
-        title = title.lower()
-        lang = langcodes.Language.get(lang)
+        # Get the language code of the given language
+        lang: langcodes.Language = langcodes.Language.get(lang)
 
-        # Update the language setting if it differs from the previous one
-        if lang != self.lang:
-            self.lang = lang
+        self.mwa = MediaWiki(
+            url=f"https://{lang}.wiktionary.org/w/api.php",
+            lang=lang.language,
+            user_agent=f"jyrkibot/0.1 (https://github.com/Saqqeee) pymediawiki/{VERSION}",
+        )
 
         # Assign variables: data for the MediaWikiPage result, url for the page URL
         data = self.mwa.page(title=title)
-        url = f"https://{self.lang.language}.wiktionary.org/wiki/{data.title}"
+        url = f"https://{lang.language}.wiktionary.org/wiki/{data.title}"
 
         return data, url
 
@@ -49,6 +44,7 @@ class Wiktionary(apc.Group):
         self,
         ctx: discord.Interaction,
         title: str,
+        language: str = "Finnish"
         # TODO: Find a neat way to give the user more language choices without cluttering up the code with endless lists
         ## TODO part 2: This could possibly now be easily done using langcodes
     ):
@@ -62,6 +58,13 @@ class Wiktionary(apc.Group):
             The title of the article to parse
         """
 
+        try:
+            language: langcodes.Language = langcodes.find(language)
+        except:
+            await ctx.response.send_message(
+                "Antamaasi kieltä ei ole olemassa.", ephemeral=True
+            )
+
         # Defer the response by sending a "thinking..." message.
         # This is done to avert the 3 second timeout in interaction responses,
         # in case the API takes a long time to answer
@@ -70,11 +73,13 @@ class Wiktionary(apc.Group):
         # Get the Wiktionary page
         try:
             data: MediaWikiPage
-            data, url = await self.fetch_page(title, self.lang.language)
+            data, url = await self.fetch_page(title, language)
 
         except exceptions.PageError:
             # What to do if no page is found with the given title
-            await ctx.followup.send(content=f"Sivua ei löytynyt otsikolla {title}.")
+            await ctx.followup.send(
+                content=f"Sivua {title} ei löytynyt kielellä {language.autonym()}."
+            )
             return
 
         # Initialize followup embed
