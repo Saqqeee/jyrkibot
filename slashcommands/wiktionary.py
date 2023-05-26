@@ -176,8 +176,8 @@ class Wiktionary(apc.Group):
                                     string = part.string or ""
                             cont += string.rstrip("\n")
 
-        # Add a final field if the loop runs out. It doesn't matter if this is empty,
-        # however if nothing comes after our final field, this line is necessary.
-        embed.add_field(name=title, value=cont)
+        # Add a final field if the loop runs out and we still have content to add:
+        if title and cont:
+            embed.add_field(name=title, value=cont)
 
         await ctx.followup.send(embed=embed)
