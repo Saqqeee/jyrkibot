@@ -82,9 +82,13 @@ class Wiktionary(apc.Group):
             )
             return
 
+        titlestring: str = data.title
+        if data.title != title:
+            titlestring += f" (uudelleenohjattu hakusanasta {title})"
+
         # Initialize followup embed
         embed = discord.Embed(
-            title=data.title, color=discord.Color.dark_magenta(), url=url
+            title=titlestring, color=discord.Color.dark_magenta(), url=url
         )
 
         # Parse the returned HTML and define the tags to look for
