@@ -1,7 +1,10 @@
 import discord
 import validators
 import urllib
+import tldextract
 from urllib.parse import *
+
+dequery = ["twitter", "instagram", "spotify", "aliexpress"]
 
 
 async def detracker(msg: discord.Message):
@@ -28,11 +31,11 @@ async def detracker(msg: discord.Message):
             if not queries:
                 continue
 
-            site = url.hostname
+            site = tldextract.extract(url.hostname).domain
 
-            if "twitter" in site or "instagram" in site or "spotify" in site:
+            if site in dequery:
                 queriesfix = await detwitter(queries)
-            elif "google" in site:
+            elif site == "google":
                 queriesfix = await degoogle(queries)
             else:
                 queriesfix = await deutm(queries)
