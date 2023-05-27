@@ -1,4 +1,5 @@
 import discord
+import asyncio
 from discord import app_commands as apc
 import json
 import random
@@ -37,7 +38,7 @@ class LotteryNumbers(discord.ui.Select):
     """Select component that takes a min and max of 7 values"""
 
     def __init__(self, options: list):
-        super().__init__(options=options, min_values=7, max_values=7)
+        super().__init__(options=options, min_values=7, max_values=7, timeout=180)
 
     async def callback(self, ctx: discord.Interaction):
         await addline(ctx, self.values)
@@ -91,7 +92,7 @@ class LotteryView(discord.ui.View):
     """Confirmation view that gives the user 'yes' and 'no' buttons"""
 
     def __init__(self, bet: int):
-        super().__init__()
+        super().__init__(timeout=60)
         self.bet = bet
 
     @discord.ui.button(label="Kyllä", style=discord.ButtonStyle.success)
@@ -117,7 +118,7 @@ class LotteryView(discord.ui.View):
                 .where(LotteryBets.roundid == (CurrentLottery.id - 1))
             )
 
-        selectbuttons = discord.ui.View()
+        selectbuttons = discord.ui.View(timeout=60)
         if prevline:
             selectbuttons.add_item(SameLineButton(line=prevline))
         selectbuttons.add_item(NewLineButton())
@@ -152,7 +153,7 @@ class Lottery(apc.Group):
             tili = db.scalar(
                 select(LotteryPlayers.credits).where(LotteryPlayers.id == ctx.user.id)
             )
-        tili = 0 if not tili else tili
+        tili = tili or 0
 
         # Send response
         await ctx.response.send_message(f"Tilisi saldo on {tili}", ephemeral=True)
@@ -252,7 +253,7 @@ class Lottery(apc.Group):
             # If balance is not enough, send an error message and return
             if not tili or tili < amount:
                 await ctx.response.send_message(
-                    f"Et ole noin rikas. Tilisi saldo on {0 if not tili else tili}.",
+                    f"Et ole noin rikas. Tilisi saldo on {tili or 0}.",
                     ephemeral=True,
                 )
                 return
@@ -294,6 +295,9 @@ class Lottery(apc.Group):
 ### FUNCTIONS ###
 
 
+cooldowns = []
+
+
 async def betbuttons(ctx: discord.Interaction):
     """Function used by the makebet command and reroll button."""
 
@@ -317,7 +321,7 @@ async def betbuttons(ctx: discord.Interaction):
         )
         return
 
-    tili = 0 if not tili else tili
+    tili = tili or 0
 
     # If balance is not enough, send an error message and return
     if config.bet > tili:
@@ -327,6 +331,10 @@ async def betbuttons(ctx: discord.Interaction):
         )
         return
 
+    if ctx.user.id in cooldowns:
+        await ctx.response.send_message(content=":casterIdoit:", ephemeral=True)
+        return
+
     # Send a UI component for confirming participation
     # The UI component LotteryView handles the rest of this interaction
     await ctx.response.send_message(
@@ -334,6 +342,10 @@ async def betbuttons(ctx: discord.Interaction):
         view=LotteryView(config.bet),
         ephemeral=True,
     )
+
+    cooldowns.append(ctx.user.id)
+    await asyncio.sleep(500)
+    cooldowns.remove(ctx.user.id)
 
 
 async def addline(ctx: discord.Interaction, line: list):
