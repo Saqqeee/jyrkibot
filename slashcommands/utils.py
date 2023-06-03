@@ -55,10 +55,17 @@ class C7ck(apc.Group):
         self.client = client
 
     @apc.command(name="length")
-    async def cock(self, ctx: discord.Interaction, user: discord.Member = None):
-        random.seed(ctx.user.id if not user else user.id)
-        cocklength = f"{round(random.gauss(15,10),2)}"
-        if user == None or user == ctx.user:
+    async def cock(
+        self, ctx: discord.Interaction, user: discord.Member = None, custom: str = None
+    ):
+        random.seed(custom or ctx.user.id if not user else user.id)
+        cocklength = f"{round(random.gauss(15,3),2)}"
+
+        if custom:
+            await ctx.response.send_message(
+                f"Henkilön {custom.title()} muna on {cocklength} cm pitkä."
+            )
+        elif user == None or user == ctx.user:
             await ctx.response.send_message(f"Munasi on {cocklength} cm pitkä.")
         else:
             await ctx.response.send_message(
@@ -66,14 +73,21 @@ class C7ck(apc.Group):
             )
 
     @apc.command(name="balls")
-    async def balls(self, ctx: discord.Interaction, user: discord.Member = None):
-        random.seed(ctx.user.id if not user else user.id)
-        ballweight = f"{round(abs(random.gauss(48,100)),1)}"
-        if user == None or user == ctx.user:
-            await ctx.response.send_message(f"Pallisi painavat {ballweight} kg.")
+    async def balls(
+        self, ctx: discord.Interaction, user: discord.Member = None, custom: str = None
+    ):
+        random.seed(custom or ctx.user.id if not user else user.id)
+        ballweight = f"{round(abs(random.gauss(35,50)),1)}"
+
+        if custom:
+            await ctx.response.send_message(
+                f"Henkilön {custom.title()} pallit painavat {ballweight} g."
+            )
+        elif user == None or user == ctx.user:
+            await ctx.response.send_message(f"Pallisi painavat {ballweight} g.")
         else:
             await ctx.response.send_message(
-                f"Käyttäjän {user.display_name} pallit painavat {ballweight} kg."
+                f"Käyttäjän {user.display_name} pallit painavat {ballweight} g."
             )
 
 
