@@ -116,7 +116,13 @@ async def goodmorning(msg: discord.Message):
     with Session(engine) as db:
         db.add(Huomenet(uid=msg.author.id, hour=hour))
 
-        ifinhus = db.scalar(select(select(HuomentaUserStats.id).exists()))
+        ifinhus = db.scalar(
+            select(
+                select(HuomentaUserStats.id)
+                .where(HuomentaUserStats.id == msg.author.id)
+                .exists()
+            )
+        )
         if not ifinhus:
             db.add(HuomentaUserStats(id=msg.author.id))
 
@@ -139,7 +145,13 @@ async def goodmorning(msg: discord.Message):
                 .values(ultralist=foundlist, lastdate=aika)
             )
 
-        isinlp = db.scalar(select(select(LotteryPlayers.id).exists()))
+        isinlp = db.scalar(
+            select(
+                select(LotteryPlayers.id)
+                .where(LotteryPlayers.id == msg.author.id)
+                .exists()
+            )
+        )
         if not isinlp:
             db.add(LotteryPlayers(id=msg.author.id, credits=0))
         db.execute(
