@@ -49,7 +49,11 @@ class Huomenta(apc.Group):
         # Fetch information from database for formatting the response
         with Session(engine) as db:
             userexists = db.scalar(
-                select(select(Users).where(Users.id == user.id).exists())
+                select(
+                    select(HuomentaUserStats)
+                    .where(HuomentaUserStats.id == user.id)
+                    .exists()
+                )
             )
             if not userexists:
                 await ctx.response.send_message("Käyttäjää ei löydetty", ephemeral=True)
