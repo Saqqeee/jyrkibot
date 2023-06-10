@@ -38,7 +38,7 @@ class LotteryNumbers(discord.ui.Select):
     """Select component that takes a min and max of 7 values"""
 
     def __init__(self, options: list):
-        super().__init__(options=options, min_values=7, max_values=7, timeout=180)
+        super().__init__(options=options, min_values=7, max_values=7)
 
     async def callback(self, ctx: discord.Interaction):
         await addline(ctx, self.values)
@@ -56,7 +56,7 @@ class NewLineButton(discord.ui.Button):
         for i in range(1, 25):
             options.append(discord.SelectOption(label=f"{i}", value=i))
         select = LotteryNumbers(options=options)
-        view_select = discord.ui.View()
+        view_select = discord.ui.View(timeout=180)
         view_select.add_item(select)
 
         # Edit response and continue to selecting numbers
