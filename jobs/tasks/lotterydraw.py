@@ -17,7 +17,7 @@ from jobs.database import (
 
 
 def calculatewinnings(amount: int):
-    return (math.comb(25, amount) - math.comb(25, amount - 1)) / math.comb(25, 7)
+    return 9 * (10 ** (-8 + amount))
 
 
 async def draw(date: datetime, client: discord.Client):
@@ -65,7 +65,7 @@ async def draw(date: datetime, client: discord.Client):
                 if int(x) in winrow:
                     correctamount += 1
             if correctamount > 0:
-                winners[correctamount].append([user[0]])
+                winners[correctamount].append(user[0])
                 parhaat.append([user[0], correctamount])
 
         for key, value in winners.items():
@@ -86,9 +86,6 @@ async def draw(date: datetime, client: discord.Client):
                     db.execute(
                         update(CurrentLottery).values(pool=CurrentLottery.pool - winsum)
                     )
-                    await client.get_user(mies[0]).send(
-                        f"Voitit lotosta **{winsum}** koppelia."
-                    )
         db.execute(
             update(CurrentLottery).values(
                 id=CurrentLottery.id + 1, startdate=datetime.now()
@@ -100,26 +97,31 @@ async def draw(date: datetime, client: discord.Client):
     if len(parhaat) == 0:
         embedtitle = "Ei voittajia tällä kierroksella"
     else:
-        embedtitle = f"Kierroksen parhaat rivit (Potti {pool} koppelia)"
+        embedtitle = f"Kierroksen voittajat ({pool} koppelia)"
 
     embed = discord.Embed(
         title=embedtitle,
         color=discord.Color.dark_magenta(),
     )
 
-    def sortink(e):
-        return e[1]
+    order = [7, 6, 5, 4, 3, 2, 1]
 
-    parhaat.sort(reverse=True, key=sortink)
-    i = 0
-    for mies in parhaat:
-        i += 1
-        if i > 5:
-            break
-        member = discord.utils.get(channel.guild.members, id=mies[0])
+    for i in order:
+        winmen = []
+
+        for mies in winners[i]:
+            member = discord.utils.get(channel.guild.members, id=mies)
+            if member:
+                winmen.append(member.display_name)
+
+        if not winmen:
+            continue
+
+        winbyamt = math.floor(shares[i] / len(winmen))
+
         embed.add_field(
-            name=f"**{i}.** {member.display_name}",
-            value=f"{mies[1]} oikein",
+            name=f"**{i} oikein** | {winbyamt} koppelia",
+            value=", ".join(winmen),
             inline=False,
         )
 
