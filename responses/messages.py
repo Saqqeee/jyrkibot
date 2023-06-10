@@ -39,7 +39,7 @@ async def goodmorning(msg: discord.Message):
         tz = db.scalar(select(Users.timezone).where(Users.id == msg.author.id))
 
     # If user has an entry in HuomentaUserStats and their cooldown has not yet passed, stop execution
-    if lastdate != None and lastdate > datetime.now() - timedelta(
+    if lastdate and lastdate > datetime.now() - timedelta(
         hours=config.huomentacooldown
     ):
         await msg.add_reaction("☕")
@@ -115,9 +115,11 @@ async def goodmorning(msg: discord.Message):
     # Send response and save stuff into databases
     with Session(engine) as db:
         db.add(Huomenet(uid=msg.author.id, hour=hour))
+
         ifinhus = db.scalar(select(select(HuomentaUserStats.id).exists()))
         if not ifinhus:
             db.add(HuomentaUserStats(id=msg.author.id))
+
         if rarity == 0:
             db.execute(
                 update(HuomentaUserStats)
@@ -136,14 +138,15 @@ async def goodmorning(msg: discord.Message):
                 .where(HuomentaUserStats.id == msg.author.id)
                 .values(ultralist=foundlist, lastdate=aika)
             )
+
         isinlp = db.scalar(select(select(LotteryPlayers.id).exists()))
         if not isinlp:
             db.add(LotteryPlayers(id=msg.author.id, credits=0))
-        else:
-            db.execute(
-                update(LotteryPlayers)
-                .where(LotteryPlayers.id == msg.author.id)
-                .values(credits=LotteryPlayers.credits + earn)
-            )
+        db.execute(
+            update(LotteryPlayers)
+            .where(LotteryPlayers.id == msg.author.id)
+            .values(credits=LotteryPlayers.credits + earn)
+        )
         db.commit()
+
     await msg.channel.send(rarenotif + respmsg + rarenotif)
