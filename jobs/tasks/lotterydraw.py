@@ -39,7 +39,7 @@ async def draw(date: datetime, client: discord.Client):
         db.execute(
             update(LotteryPlayers)
             .where(LotteryPlayers.credits < config.bet)
-            .values(sub=0)
+            .values(sub=False)
         )
 
         round, pool = db.execute(select(CurrentLottery.id, CurrentLottery.pool)).one()
