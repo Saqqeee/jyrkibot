@@ -12,6 +12,7 @@ import alembic.command
 from alembic.config import Config
 
 handler = logging.FileHandler(filename="loki.log", encoding="utf-8", mode="w")
+alembic_cfg = Config("alembic.ini")
 
 # Connect into database or create one if it doesn't already exist
 if not os.path.exists("data"):
@@ -21,9 +22,9 @@ if not os.path.exists("data/files"):
 
 if not os.path.exists("data/database.db"):
     Base.metadata.create_all(engine)
+    alembic.command.stamp(alembic_cfg, "head")
 
 # Run database migrations
-alembic_cfg = Config("alembic.ini")
 alembic.command.upgrade(alembic_cfg, "head")
 
 
