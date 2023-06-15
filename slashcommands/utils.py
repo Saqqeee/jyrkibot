@@ -136,7 +136,6 @@ class Request(apc.Group):
                     Requests.type,
                 ).where(Requests.type == type.value)
             for req in db.execute(frlist).fetchall():
-                print(req)
                 embed.add_field(
                     name=f"**{req[0]}**, **{discord.utils.get(ctx.guild.members, id=req[1]).display_name}**: {req[3]} ({req[4]})",
                     value=req[2],
@@ -158,12 +157,13 @@ class Request(apc.Group):
     ):
         if ctx.user.id == config.owner:
             with Session(engine) as db:
+                reqmsg = db.scalar(select(Requests.message).where(Requests.id == id))
                 db.execute(
                     update(Requests).where(Requests.id == id).values(type=type.value)
                 )
                 db.commit()
             await ctx.response.send_message(
-                f"Updated request `{id}` to type {type.name}."
+                f"Pyyntö `{id}` on nyt {type.name}:\n> {reqmsg}"
             )
         else:
             await ctx.response.send_message("Et voi tehdä noin!", ephemeral=True)
