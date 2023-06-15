@@ -18,7 +18,7 @@ depends_on = None
 
 def upgrade() -> None:
     op.add_column(
-        "LotteryPlayers", sa.Column("sub", sa.Bool, server_default=str(False))
+        "LotteryPlayers", sa.Column("sub", sa.Boolean, server_default=str(False))
     )
 
 
