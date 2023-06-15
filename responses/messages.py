@@ -153,7 +153,7 @@ async def goodmorning(msg: discord.Message):
             )
         )
         if not isinlp:
-            db.add(LotteryPlayers(id=msg.author.id, credits=0))
+            db.add(LotteryPlayers(id=msg.author.id, credits=0, sub=False))
         db.execute(
             update(LotteryPlayers)
             .where(LotteryPlayers.id == msg.author.id)
