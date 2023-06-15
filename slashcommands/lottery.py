@@ -3,6 +3,7 @@ import asyncio
 from discord import app_commands as apc
 import json
 import random
+from typing import Literal
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 from jobs.tasks.cache_config import config
@@ -290,6 +291,60 @@ class Lottery(apc.Group):
             f"Käyttäjän {recipient.mention} tilille siirretty **{amount}** koppelia.",
             ephemeral=True,
         )
+
+    @apc.command(
+        name="subscribe",
+        description="Tee kestotilaus lottoon! Tilaus peruuntuu automaattisesti, jos koppelit loppuvat.",
+    )
+    @apc.choices(cancel=[apc.Choice(name="True", value=1)])
+    @apc.describe(cancel="Jos valitset kyllä, tilauksesi peruutetaan välittömästi.")
+    async def subscribe(
+        self,
+        ctx: discord.Interaction,
+        cancel: apc.Choice[int] = 0,
+    ):
+        """Allow the user to subscribe to the lottery indefinitely"""
+        cancel = False if cancel == 0 else True
+
+        with Session(engine) as db:
+            # Check if the user is currently subscribed or not and their balance
+            currently_subbed, user_credits = db.execute(
+                select(LotteryPlayers.sub, LotteryPlayers.credits).where(
+                    LotteryPlayers.id == ctx.user.id
+                )
+            ).one()
+
+            # If the user does not have (enough) credits, inform them and return
+            if not user_credits or user_credits < config.bet:
+                await ctx.response.send_message(
+                    content="Sinulla ei ole tarpeeksi koppeleita", ephemeral=True
+                )
+                return
+
+            # If the user tries to cancel a non-existing subscription or subscribe twice,
+            # tell them that nothing was changed and return
+            if (not currently_subbed and cancel) or (currently_subbed and not cancel):
+                await ctx.response.send_message("Mitään ei muutettu", ephemeral=True)
+                return
+
+            # Otherwise set variables accordingly
+            if not currently_subbed and not cancel:
+                new_sub = True
+                response_string = "Tilauksesi on tallennettu"
+
+            if currently_subbed and cancel:
+                new_sub = False
+                response_string = "Tilauksesi on peruutettu"
+
+            # Save subscription status into database
+            db.execute(
+                update(LotteryPlayers)
+                .where(LotteryPlayers.id == ctx.user.id)
+                .values(sub=new_sub)
+            )
+            db.commit()
+
+            await ctx.response.send_message(content=response_string, ephemeral=True)
 
 
 ### FUNCTIONS ###

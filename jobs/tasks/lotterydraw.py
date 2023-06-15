@@ -1,5 +1,5 @@
 import discord
-from sqlalchemy import select, update
+from sqlalchemy import select, update, func
 from sqlalchemy.orm import Session
 import math
 import json
@@ -33,13 +33,41 @@ async def draw(date: datetime, client: discord.Client):
             db.commit()
             await channel.send("Uusi lottosessio aloitettu")
             return
-        if (date.hour < 17) or (date - startdate < timedelta(hours=12)):
-            return
+        # if (date.hour < 17) or (date - startdate < timedelta(hours=12)):
+        #    return
+
+        db.execute(
+            update(LotteryPlayers)
+            .where(LotteryPlayers.credits < config.bet)
+            .values(sub=0)
+        )
 
         round, pool = db.execute(select(CurrentLottery.id, CurrentLottery.pool)).one()
+
         bets = db.execute(
             select(LotteryBets.uid, LotteryBets.row).where(LotteryBets.roundid == round)
         ).all()
+
+        recurring = db.execute(
+            select(
+                LotteryBets.uid.distinct(),
+                LotteryBets.row,
+                func.max(LotteryBets.roundid),
+            )
+            .join(LotteryPlayers, LotteryPlayers.id == LotteryBets.uid)
+            .where(LotteryPlayers.sub)
+            .group_by(LotteryPlayers.id)
+        ).all()
+
+        betids = [_[0] for _ in bets]
+        for rec in recurring:
+            if rec[0] not in betids:
+                bets.append(rec[0:2])
+                db.execute(
+                    update(LotteryPlayers)
+                    .where(LotteryPlayers.id == rec[0])
+                    .values(credits=LotteryPlayers.credits - config.bet)
+                )
 
         if len(bets) == 0:
             db.execute(update(CurrentLottery).values(startdate=datetime.now()))
