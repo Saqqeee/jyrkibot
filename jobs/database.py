@@ -66,6 +66,7 @@ class LotteryPlayers(Base):
 
     id: Mapped[int] = mapped_column(ForeignKey("Users.id"), primary_key=True)
     credits: Mapped[int]
+    sub: Mapped[bool]
 
 
 class CurrentLottery(Base):
