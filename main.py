@@ -8,6 +8,8 @@ import subprocess
 import sys
 from jobs.tasks.cache_config import config
 from jobs.database import engine, Base, HuomentaResponses
+import alembic.command
+from alembic.config import Config
 
 handler = logging.FileHandler(filename="loki.log", encoding="utf-8", mode="w")
 
@@ -17,7 +19,13 @@ if not os.path.exists("data"):
 if not os.path.exists("data/files"):
     os.makedirs("data/files")
 
-Base.metadata.create_all(engine)
+if not os.path.exists("data/database.db"):
+    Base.metadata.create_all(engine)
+
+# Run database migrations
+alembic_cfg = Config("alembic.ini")
+alembic.command.upgrade(alembic_cfg, "head")
+
 
 # Import additional modules only after the config and database are ready
 from slashcommands import huomenta, utils, lottery, drunk, alarms, tools, wiktionary
