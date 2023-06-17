@@ -102,13 +102,11 @@ async def draw(date: datetime, client: discord.Client):
                 winsum = math.floor(shares[key] / len(value))
                 if winsum > 0:
                     db.add(
-                        LotteryWins(
-                            uid=mies[0], roundid=round, payout=winsum, date=date
-                        )
+                        LotteryWins(uid=mies, roundid=round, payout=winsum, date=date)
                     )
                     db.execute(
                         update(LotteryPlayers)
-                        .where(LotteryPlayers.id == mies[0])
+                        .where(LotteryPlayers.id == mies)
                         .values(credits=LotteryPlayers.credits + winsum)
                     )
                     db.execute(
