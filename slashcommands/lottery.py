@@ -314,13 +314,6 @@ class Lottery(apc.Group):
                 )
             ).one()
 
-            # If the user does not have (enough) credits, inform them and return
-            if not user_credits or user_credits < config.bet:
-                await ctx.response.send_message(
-                    content="Sinulla ei ole tarpeeksi koppeleita", ephemeral=True
-                )
-                return
-
             # If the user tries to cancel a non-existing subscription or subscribe twice,
             # tell them that nothing was changed and return
             if (not currently_subbed and cancel) or (currently_subbed and not cancel):
