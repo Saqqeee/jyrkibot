@@ -29,7 +29,16 @@ alembic.command.upgrade(alembic_cfg, "head")
 
 
 # Import additional modules only after the config and database are ready
-from slashcommands import huomenta, utils, lottery, drunk, alarms, tools, wiktionary
+from slashcommands import (
+    huomenta,
+    utils,
+    lottery,
+    drunk,
+    alarms,
+    tools,
+    wiktionary,
+    weather,
+)
 from responses import messages, voice, links
 
 # If table HuomentaResponses is empty, populate it
@@ -144,6 +153,7 @@ tree.add_command(alarms.Alarm(client), guild=gld)
 tree.add_command(tools.Tools(client), guild=gld)
 tree.add_command(utils.C7ck(client), guild=gld)
 tree.add_command(wiktionary.Wiktionary(client), guild=gld)
+tree.add_command(weather.Weather(), guild=gld)
 tree.add_command(utils.gpmems, guild=gld)
 tree.add_command(utils.timezone, guild=gld)
 
