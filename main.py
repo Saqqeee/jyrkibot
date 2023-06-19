@@ -129,8 +129,20 @@ async def update(ctx: discord.Interaction):
     """
     if ctx.user.id == config.owner:
         await ctx.response.send_message("Jyrki ottaa päikkärit", ephemeral=True)
-        subprocess.Popen("./update.sh")
         await client.close()
+        await asyncio.sleep(3)
+        subprocess.Popen("./update.sh")
+        sys.exit(0)
+    else:
+        await ctx.response.send_message("Et voi tehdä noin!", ephemeral=True)
+
+
+@tree.command(name="shutdown", guild=gld)
+async def shutdown(ctx: discord.Interaction):
+    if ctx.user.id == config.owner:
+        await ctx.response.send_message("Jyrki kuolee", ephemeral=True)
+        await client.close()
+        await asyncio.sleep(3)
         sys.exit(0)
     else:
         await ctx.response.send_message("Et voi tehdä noin!", ephemeral=True)
