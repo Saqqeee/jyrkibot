@@ -127,6 +127,10 @@ class Weather(apc.Group):
             timestamp=datetime.now(pytz.timezone(usertz)),
             description=f"{timespan} ennuste, aikavyöhyke {usertz}",
         )
+        embed.set_footer(
+            icon_url="https://pbs.twimg.com/profile_images/1164131428931706885/tNlaujCm_400x400.png",
+            text="Ilmatieteen laitos",
+        )
 
         # Iterate the dictionary
         for time, data in forecastdata.data.items():
@@ -192,6 +196,10 @@ class Weather(apc.Group):
             color=discord.Color.dark_magenta(),
             title=f"Sää kohteessa {locationname}",
             timestamp=pytz.timezone("Europe/Helsinki").fromutc(timekey),
+        )
+        embed.set_footer(
+            icon_url="https://pbs.twimg.com/profile_images/1164131428931706885/tNlaujCm_400x400.png",
+            text="Ilmatieteen laitos",
         )
 
         # Add fields to embed one by one
