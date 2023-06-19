@@ -4,13 +4,9 @@ from typing import Literal
 from fmiopendata.wfs import download_stored_query
 from datetime import datetime, timedelta
 import pytz
-import warnings
 from jobs.database import engine, Users
 from sqlalchemy.orm import Session
 from sqlalchemy import select
-
-# Filter warnings as errors so we're able to catch them
-warnings.filterwarnings("error")
 
 
 async def _getforecast(place: str, parameters: str, time: Literal["24h", "3d"]):
@@ -38,20 +34,16 @@ async def _getforecast(place: str, parameters: str, time: Literal["24h", "3d"]):
         endtime = starttime + timedelta(hours=60)
         timestep = "360"
 
-    try:
-        query = download_stored_query(
-            "fmi::forecast::harmonie::surface::point::multipointcoverage",
-            args=[
-                f"place={place}",
-                f"parameters={parameters}",
-                f"starttime={starttime}",
-                f"endtime={endtime}",
-                f"timestep={timestep}",
-            ],
-        )
-    # Catch a UserWarning caused by invalid place name or parameters and return None
-    except UserWarning:
-        return None
+    query = download_stored_query(
+        "fmi::forecast::harmonie::surface::point::multipointcoverage",
+        args=[
+            f"place={place}",
+            f"parameters={parameters}",
+            f"starttime={starttime}",
+            f"endtime={endtime}",
+            f"timestep={timestep}",
+        ],
+    )
 
     return query
 
@@ -92,7 +84,7 @@ class Weather(apc.Group):
         forecastdata = await _getforecast(place, self.qparams, timespan)
 
         # If forecast data is not found, send an error message and return
-        if not forecastdata:
+        if not forecastdata.data:
             await ctx.response.send_message(
                 content=f"Sääennustetta ei löytynyt paikalle {place.title()}",
                 ephemeral=True,
