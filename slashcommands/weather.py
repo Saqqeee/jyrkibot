@@ -7,6 +7,7 @@ import pytz
 from jobs.database import engine, Users
 from sqlalchemy.orm import Session
 from sqlalchemy import select
+from math import isnan
 
 
 async def _getweatherdata(
@@ -194,29 +195,42 @@ class Weather(apc.Group):
         )
 
         # Add fields to embed one by one
-        embed.add_field(
-            name="\U0001F321 Lämpötila",
-            value=f"{temp} {chr(176)}C",
-            inline=True,
-        )
-        embed.add_field(
-            name="\U0001F4A8 Tuuli",
-            value=f"{windarrow} {windspeed} ({windgust}) m/s",
-            inline=True,
-        )
-        embed.add_field(
-            name="\U0001F327 Sade", value=f"{rainintensity} mm", inline=True
-        )
-        embed.add_field(
-            name="\U0001F4A6 Ilmankosteus", value=f"{humidity} %", inline=True
-        )
-        embed.add_field(
-            name="\U00002601 Pilvisyys",
-            value=f"{cloudstrings[cloudamount]} ({int(cloudamount)}/8)",
-        )
+        if not isnan(temp):
+            embed.add_field(
+                name="\U0001F321 Lämpötila",
+                value=f"{temp} {chr(176)}C",
+                inline=True,
+            )
+        if not isnan(windspeed):
+            embed.add_field(
+                name="\U0001F4A8 Tuuli",
+                value=f"{windarrow} {windspeed} ({windgust}) m/s",
+                inline=True,
+            )
+        if not isnan(rainintensity):
+            embed.add_field(
+                name="\U0001F327 Sade", value=f"{rainintensity} mm", inline=True
+            )
+        if not isnan(humidity):
+            embed.add_field(
+                name="\U0001F4A6 Kosteus", value=f"{humidity} %", inline=True
+            )
+        if not isnan(cloudamount):
+            embed.add_field(
+                name="\U00002601 Pilvisyys",
+                value=f"{cloudstrings[cloudamount]} ({int(cloudamount)}/8)",
+            )
         if snowdepth > 0:
             embed.add_field(
                 name="\U00002744 Lumensyvyys", value=f"{snowdepth} cm", inline=True
             )
+
+        # If the embed would be empty, send an error message instead
+        if not embed.fields:
+            await ctx.response.send_message(
+                content=f"Kohteelle {locationname} ei löydetty tuoretta säädataa",
+                ephemeral=True,
+            )
+            return
 
         await ctx.response.send_message(embed=embed)
