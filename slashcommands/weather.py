@@ -84,7 +84,7 @@ class Weather(apc.Group):
         )
         self.currentweatherstring = "fmi::observations::weather::multipointcoverage"
         self.currentweatherparams = (
-            "t2m,ws_10min,wg_10min,wd_10min,rh,r_1h,ri_10min,snow_aws,n_man,wawa"
+            "t2m,ws_10min,wg_10min,wd_10min,rh,r_1h,ri_10min,snow_aws,n_man,vis"
         )
 
     @apc.command(
@@ -179,6 +179,7 @@ class Weather(apc.Group):
         humidity = weathervalues["Relative humidity"]["value"]
         snowdepth = weathervalues["Snow depth"]["value"]
         cloudamount = weathervalues["Cloud amount"]["value"]
+        visibility = weathervalues["Horizontal visibility"]["value"]
         cloudstrings = {
             0.0: "Selkeää",
             1.0: "Melkein selkeää",
@@ -222,7 +223,7 @@ class Weather(apc.Group):
             )
         if not isnan(humidity):
             embed.add_field(
-                name="\U0001F4A6 Kosteus", value=f"{humidity} %", inline=True
+                name="\U0001F4A6 Kosteus", value=f"{int(humidity)} %", inline=True
             )
         if not isnan(cloudamount):
             embed.add_field(
@@ -232,6 +233,12 @@ class Weather(apc.Group):
         if snowdepth > 0:
             embed.add_field(
                 name="\U00002744 Lumensyvyys", value=f"{snowdepth} cm", inline=True
+            )
+        if not isnan(visibility):
+            embed.add_field(
+                name="\U0001F440 Näkyvyys",
+                value=f"{round(visibility/1000)} km",
+                inline=True,
             )
 
         # If the embed would be empty, send an error message instead
