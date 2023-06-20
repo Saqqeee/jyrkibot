@@ -194,8 +194,9 @@ class Weather(apc.Group):
         # Initialize response embed
         embed = discord.Embed(
             color=discord.Color.dark_magenta(),
-            title=f"Sää kohteessa {locationname}",
+            title=f"Sää kohteessa {place.title()}",
             timestamp=pytz.timezone("Europe/Helsinki").fromutc(timekey),
+            description=f"Tiedot havaintoasemalta {locationname}",
         )
         embed.set_footer(
             icon_url="https://pbs.twimg.com/profile_images/1164131428931706885/tNlaujCm_400x400.png",
@@ -236,7 +237,7 @@ class Weather(apc.Group):
         # If the embed would be empty, send an error message instead
         if not embed.fields:
             await ctx.response.send_message(
-                content=f"Kohteelle {locationname} ei löydetty tuoretta säädataa",
+                content=f"Kohteelle {place.title()} ei löydetty tuoretta säädataa",
                 ephemeral=True,
             )
             return
