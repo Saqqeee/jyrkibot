@@ -41,10 +41,16 @@ async def _getweatherdata(
         starttime -= timedelta(hours=1)
         timestep = None
 
+    fmisid = None
+    try:
+        fmisid = int(place)
+    except:
+        pass
+
     query = download_stored_query(
         querystring,
         args=[
-            f"place={place}",
+            f"fmisid={fmisid}" if fmisid else f"place={place}",
             f"parameters={parameters}",
             f"starttime={starttime}",
             f"endtime={endtime}" if endtime else "",
@@ -136,8 +142,9 @@ class Weather(apc.Group):
         for time, data in forecastdata.data.items():
             time: datetime
             timestamp = pytz.timezone(usertz).fromutc(time).strftime(timeformat)
+            locationname = list(data.keys())[0]
 
-            data: dict = data[place.title()]
+            data: dict = data[locationname]
             temp = data["Air temperature"]["value"]
             windarrow = await _getwindarrow(data["Wind direction"]["value"])
             wind = data["Wind speed"]["value"]
