@@ -1,5 +1,6 @@
 import discord
 import json
+from typing import Literal
 from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 from discord import app_commands as apc
@@ -144,29 +145,55 @@ class Huomenta(apc.Group):
         await ctx.response.send_message(embed=embed, ephemeral=hidden)
 
     @apc.command(name="leaderboard", description="Kuka on herännyt eniten!")
-    async def leaderboard(self, ctx: discord.Interaction):
+    async def leaderboard(
+        self, ctx: discord.Interaction, sort: Literal["sheep", "all"] = "sheep"
+    ):
         with Session(engine) as db:
-            selection = (
+            sheepselection = (
+                select(Huomenet.uid, func.count(Huomenet.hour))
+                .group_by(Huomenet.uid)
+                .order_by(func.count(Huomenet.hour).desc())
+                .where(
+                    (Huomenet.hour < config.rattimes[0])
+                    & (Huomenet.hour >= config.rattimes[1])
+                )
+            )
+
+            allselection = (
                 select(Huomenet.uid, func.count(Huomenet.hour))
                 .group_by(Huomenet.uid)
                 .order_by(func.count(Huomenet.hour).desc())
             )
-            leaders = db.execute(selection.limit(5)).fetchall()
+
+            if sort == "sheep":
+                leaders = db.execute(sheepselection.limit(5)).fetchall()
+            else:
+                leaders = db.execute(allselection.limit(5)).fetchall()
+
         if len(leaders) == 0:
-            await ctx.response.send_message("Kukaan täällä ei ole herännyt.")
+            await ctx.response.send_message(
+                f"Kukaan täällä ei ole herännyt{' ihmisten aikoihin' if sort=='sheep' else ''}."
+            )
             return
+
         embed = discord.Embed(
-            title="Top 5 herääjät:", color=discord.Color.dark_magenta()
+            title="Top 5 herääjät:",
+            color=discord.Color.dark_magenta(),
+            description="Vain ihmisten aikoihin heränneet"
+            if sort == "sheep"
+            else "Kaikki herätykset",
         )
+
         i = 0
         for leader in leaders:
             i += 1
             member = discord.utils.get(ctx.guild.members, id=leader[0])
             embed.add_field(
                 name=f"**{i}.** {member.display_name}",
-                value=f"Herätyksiä {leader[1]}",
+                value=f"{'Lammasherätyksiä' if sort=='sheep' else 'Herätyksiä'} {leader[1]}",
                 inline=False,
             )
+
         await ctx.response.send_message(embed=embed)
 
     @apc.command(name="add", description="Owner only command")
