@@ -73,7 +73,7 @@ async def draw(date: datetime, client: discord.Client):
             db.execute(update(CurrentLottery).values(startdate=datetime.now()))
             db.commit()
             return
-        winrow = random.sample([*range(1, 25)], k=7)
+        winrow = random.sample([*range(1, 19)], k=7)
         winners = {
             1: [],
             2: [],

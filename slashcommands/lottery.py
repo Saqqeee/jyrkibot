@@ -54,7 +54,7 @@ class NewLineButton(discord.ui.Button):
 
         # Initialize a LotteryNumbers view for the followup
         options = []
-        for i in range(1, 25):
+        for i in range(1, 19):
             options.append(discord.SelectOption(label=f"{i}", value=i))
         select = LotteryNumbers(options=options)
         view_select = discord.ui.View(timeout=180)
@@ -83,7 +83,7 @@ class RandLineButton(discord.ui.Button):
     async def callback(self, ctx: discord.Interaction):
         """Participate with random line"""
 
-        self.line = random.sample([*range(1, 25)], k=7)
+        self.line = random.sample([*range(1, 19)], k=7)
         for i in range(len(self.line)):
             self.line[i] = str(self.line[i])
         await addline(ctx, self.line)
