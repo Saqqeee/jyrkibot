@@ -1,10 +1,18 @@
 import discord
 import validators
-import urllib
-import tldextract
 from urllib.parse import *
 
-dequery = ["twitter", "instagram", "spotify", "aliexpress"]
+_whitelist = ["q", "t", "context"]
+
+
+async def _dequery(queries: dict):
+    allowed = {}
+
+    for key, value in queries.items():
+        if key in _whitelist:
+            allowed[key] = value
+
+    return allowed
 
 
 async def detracker(msg: discord.Message):
@@ -31,14 +39,7 @@ async def detracker(msg: discord.Message):
             if not queries:
                 continue
 
-            site = tldextract.extract(url.hostname).domain
-
-            if site in dequery:
-                queriesfix = await detwitter(queries)
-            elif site == "google":
-                queriesfix = await degoogle(queries)
-            else:
-                queriesfix = await deutm(queries)
+            queriesfix = await _dequery(queries)
 
             # Don't continue if nothing was changed
             if queriesfix == queries:
@@ -58,30 +59,3 @@ async def detracker(msg: discord.Message):
     response = f"Linkkisi putsattuna: <{'>, <'.join(badlinks)}>"
 
     await msg.reply(content=response, mention_author=False)
-
-
-### SEPARATE QUERY MANIPULATION FUNCTIONS FOR DIFFERENT WEBSITES
-
-
-async def detwitter(queries: dict):
-    """Remove everything"""
-    return {}
-
-
-async def degoogle(queries: dict):
-    """Remove all but the query itself"""
-    result = {"q": queries["q"]}
-    return result
-
-
-async def deutm(queries: dict):
-    """Remove UTM parameters"""
-
-    utm_params = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"]
-    result = {}
-
-    for key, value in queries.items():
-        if key not in utm_params:
-            result[key] = value
-
-    return result
