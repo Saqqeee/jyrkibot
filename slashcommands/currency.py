@@ -97,4 +97,6 @@ class Currency(apc.Group):
             await ctx.response.send_message("Tuntematon valuutta", ephemeral=True)
             return
 
-        await ctx.response.send_message(content=f"{amount} {og} <-> {result} {target}")
+        await ctx.response.send_message(
+            content=f"{round(amount, 2)} {og} <-> {round(result, 2)} {target}"
+        )
