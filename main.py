@@ -39,6 +39,7 @@ from slashcommands import (
     tools,
     wiktionary,
     weather,
+    currency,
 )
 from responses import messages, voice, links
 
@@ -165,6 +166,7 @@ tree.add_command(tools.Tools(client), guild=gld)
 tree.add_command(utils.C7ck(client), guild=gld)
 tree.add_command(wiktionary.Wiktionary(client), guild=gld)
 tree.add_command(weather.Weather(), guild=gld)
+tree.add_command(currency.Currency(), guild=gld)
 tree.add_command(utils.gpmems, guild=gld)
 tree.add_command(utils.timezone, guild=gld)
 
