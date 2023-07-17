@@ -59,11 +59,29 @@ async def addtochannel(
     if ctx.user.id == config.owner:
         try:
             await user.add_roles(role)
-            await channel.set_permissions(user, read_messages=True)
+            await channel.set_permissions(
+                role, read_messages=True, send_messages=True, read_message_history=True
+            )
         except discord.Forbidden:
             await ctx.response.send_message("Ei lupaa", ephemeral=True)
         else:
             await ctx.response.send_message("Ihmisoikeudet annettu", ephemeral=True)
+    else:
+        await ctx.response.send_message("Et voi tehdä noin!", ephemeral=True)
+
+
+@apc.command(name="addrole", description="Dont even")
+async def addrole(
+    ctx: discord.Interaction,
+    name: str,
+):
+    if ctx.user.id == config.owner:
+        try:
+            await ctx.guild.create_role(name=name)
+        except discord.Forbidden:
+            await ctx.response.send_message("Ei lupaa", ephemeral=True)
+        else:
+            await ctx.response.send_message("Rooli luotu", ephemeral=True)
     else:
         await ctx.response.send_message("Et voi tehdä noin!", ephemeral=True)
 
