@@ -86,6 +86,21 @@ async def addrole(
         await ctx.response.send_message("Et voi tehdä noin!", ephemeral=True)
 
 
+@apc.command(name="userroledel", description="Dont even")
+async def userroledel(
+    ctx: discord.Interaction, user: discord.Member, role: discord.Role
+):
+    if ctx.user.id == config.owner:
+        try:
+            await user.remove_roles(role)
+        except discord.Forbidden:
+            await ctx.response.send_message("Ei lupaa", ephemeral=True)
+        else:
+            await ctx.response.send_message("Rooli poistettu", ephemeral=True)
+    else:
+        await ctx.response.send_message("Et voi tehdä noin!", ephemeral=True)
+
+
 class C7ck(apc.Group):
     def __init__(self, client):
         super().__init__()
