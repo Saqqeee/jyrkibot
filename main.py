@@ -169,6 +169,7 @@ tree.add_command(weather.Weather(), guild=gld)
 tree.add_command(currency.Currency(), guild=gld)
 tree.add_command(utils.gpmems, guild=gld)
 tree.add_command(utils.timezone, guild=gld)
+tree.add_command(utils.addtochannel, guild=gld)
 
 if __name__ == "__main__":
     client.run(config.token, log_handler=handler)

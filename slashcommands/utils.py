@@ -49,6 +49,23 @@ async def timezone(
     )
 
 
+@apc.command(name="addtochannel", description="Dont even")
+async def addtochannel(
+    ctx: discord.Interaction,
+    user: discord.Member,
+    channel: discord.TextChannel,
+):
+    if ctx.user.id == config.owner:
+        try:
+            await channel.set_permissions(user, read_messages=True, send_messages=True)
+        except discord.Forbidden:
+            await ctx.response.send_message("Ei lupaa", ephemeral=True)
+        else:
+            await ctx.response.send_message("Ihmisoikeudet annettu", ephemeral=True)
+    else:
+        await ctx.response.send_message("Et voi tehdä noin!", ephemeral=True)
+
+
 class C7ck(apc.Group):
     def __init__(self, client):
         super().__init__()
