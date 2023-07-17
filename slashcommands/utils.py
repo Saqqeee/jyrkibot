@@ -53,10 +53,12 @@ async def timezone(
 async def addtochannel(
     ctx: discord.Interaction,
     user: discord.Member,
+    role: discord.Role,
     channel: discord.TextChannel,
 ):
     if ctx.user.id == config.owner:
         try:
+            await user.add_roles(role)
             await channel.set_permissions(user, read_messages=True, send_messages=True)
         except discord.Forbidden:
             await ctx.response.send_message("Ei lupaa", ephemeral=True)
