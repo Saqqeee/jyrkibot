@@ -2,7 +2,7 @@ import discord
 import validators
 from urllib.parse import *
 
-_whitelist = ["v", "q", "t", "context", "id"]
+_whitelist = ["v", "q", "t", "context", "id", "format", "name", "secret"]
 
 
 async def _dequery(queries: dict):

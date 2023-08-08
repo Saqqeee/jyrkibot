@@ -35,7 +35,7 @@ class Wiktionary(apc.Group):
 
         # Assign variables: data for the MediaWikiPage result, url for the page URL
         data = self.mwa.page(title=title)
-        url = f"https://{lang.language}.wiktionary.org/wiki/{data.title}"
+        url = f"https://{lang.language}.wiktionary.org/wiki/{data.title.replace(' ', '_')}"
 
         return data, url
 
