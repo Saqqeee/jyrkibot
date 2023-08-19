@@ -76,14 +76,11 @@ async def on_ready():
 
 @client.event
 async def on_message(msg: discord.Message):
-    """
-    Cannot respond to self or another bot. In any other case, do various thing depending to what was said.
-    """
     if msg.author == client.user or msg.author.bot:
         return
     if msg.content.lower() == "huomenta":
         await messages.goodmorning(msg)
-    await links.detracker(msg)
+    # await links.detracker(msg)
 
 
 @client.event
