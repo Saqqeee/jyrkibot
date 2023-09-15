@@ -59,7 +59,7 @@ def _getrates() -> dict:
     return rates
 
 
-def _convert(amount: Union[int, float], original: str, target: str) -> float:
+def _convertcurrency(amount: Union[int, float], original: str, target: str) -> float:
     """
     Do the conversion from currency to currency
     """
@@ -78,13 +78,13 @@ def _convert(amount: Union[int, float], original: str, target: str) -> float:
     return amount * truerate
 
 
-class Currency(apc.Group):
+class Convert(apc.Group):
     def __init__(self):
         super().__init__()
 
-    @apc.command(name="convert", description="Valuuttamuunnos")
+    @apc.command(name="currency", description="Valuuttamuunnos")
     @apc.rename(og="from", target="to")
-    async def convert(
+    async def currency(
         self,
         ctx: discord.Interaction,
         amount: float,
@@ -92,7 +92,7 @@ class Currency(apc.Group):
         target: SUPPORTED_CURRENCIES,
     ):
         try:
-            result = _convert(amount, og, target)
+            result = _convertcurrency(amount, og, target)
         except ValueError:
             await ctx.response.send_message("Tuntematon valuutta", ephemeral=True)
             return
@@ -100,3 +100,4 @@ class Currency(apc.Group):
         await ctx.response.send_message(
             content=f"{round(amount, 2)} {og} <-> {round(result, 2)} {target}"
         )
+
