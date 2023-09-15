@@ -78,6 +78,36 @@ def _convertcurrency(amount: Union[int, float], original: str, target: str) -> f
     return amount * truerate
 
 
+def _convertspeed(value: float, og: str, target: str) -> float:
+    """
+    Do the conversion from one unit of velocity to another
+    """
+
+    conversions = {"m/s": 1.0, "km/h": 3.6, "mph": 2.236936, "kn": 1.943844}
+
+    result = conversions[target] / conversions[og]
+
+    return value * result
+
+
+def _convertlength(value: float, og: str, target: str) -> float:
+    """
+    Do the conversion from one unit of length to another
+    """
+
+    conversions = {
+        "meters": 1.0,
+        "inches": 1 / 0.0254,
+        "feet": 1 / 0.3048,
+        "yards": 1 / 0.9144,
+        "miles": 1 / 1609.344,
+    }
+
+    result = conversions[target] / conversions[og]
+
+    return value * result
+
+
 class Convert(apc.Group):
     def __init__(self):
         super().__init__()
@@ -101,3 +131,40 @@ class Convert(apc.Group):
             content=f"{round(amount, 2)} {og} <-> {round(result, 2)} {target}"
         )
 
+    @apc.command(name="velocity", description="Nopeusyksikön muunnos")
+    @apc.rename(og="from", target="to")
+    async def velocity(
+        self,
+        ctx: discord.Interaction,
+        value: float,
+        og: Literal["m/s", "km/h", "mph", "kn"],
+        target: Literal["m/s", "km/h", "mph", "kn"],
+    ):
+        try:
+            result = _convertspeed(value, og, target)
+        except:
+            await ctx.response.send_message("Jokin virhe tapahtui", ephemeral=True)
+            return
+
+        await ctx.response.send_message(
+            content=f"{round(value, 6)} {og} <-> {round(result, 6)} {target}"
+        )
+
+    @apc.command(name="length", description="Nopeusyksikön muunnos")
+    @apc.rename(og="from", target="to")
+    async def length(
+        self,
+        ctx: discord.Interaction,
+        value: float,
+        og: Literal["meters", "inches", "feet", "yards", "miles"],
+        target: Literal["meters", "inches", "feet", "yards", "miles"],
+    ):
+        try:
+            result = _convertlength(value, og, target)
+        except:
+            await ctx.response.send_message("Jokin virhe tapahtui", ephemeral=True)
+            return
+
+        await ctx.response.send_message(
+            content=f"{round(value, 6)} {og} <-> {round(result, 6)} {target}"
+        )
