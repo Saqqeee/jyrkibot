@@ -162,3 +162,26 @@ async def goodmorning(msg: discord.Message):
         db.commit()
 
     await msg.channel.send(rarenotif + respmsg + rarenotif)
+
+
+async def goodnight(msg: discord.Message):
+    """
+    Send a good night message.
+    """
+    if msg.content.lower() == "kauniita unia":
+        await msg.channel.send("Oman kullin kuiva")
+        return
+
+    # TODO: Move these into a database so more options can easily be added
+    replies = [
+        "Hyvää yötä",
+        "Öitä",
+        "gn",
+        "Kauniita unia",
+        "Hyvää yötä Kallio",
+        "Lepää rauhassa",
+        "Toivottavasti heräät aamulla",
+        "Huomiseen",
+    ]
+
+    await msg.channel.send(random.choice(replies))

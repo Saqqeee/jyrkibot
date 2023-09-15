@@ -80,6 +80,8 @@ async def on_message(msg: discord.Message):
         return
     if msg.content.lower() == "huomenta":
         await messages.goodmorning(msg)
+    if msg.content.lower() in ["hyvää yötä", "öitä", "gn", "öt", "kauniita unia"]:
+        await messages.goodnight(msg)
     # await links.detracker(msg)
 
 
