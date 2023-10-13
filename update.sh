@@ -6,16 +6,14 @@ launch="main.py"
 if [[ -d .git ]]
 then
     install_dir="${PWD}/../"
-if [[ -d "${clone_dir}" ]]
-then
+if [[ -d "${clone_dir}" ]]; then
     cd "${clone_dir}"/
 
     # Sync with the repository before doing anything stupid
     "${github}" repo sync
 
     # Create a virtual environment if one doesn't exist
-    if [[ ! -d "/env "]]
-    then
+    if [[ ! -d "/env "]]; then
         python -m venv env
     fi
 
