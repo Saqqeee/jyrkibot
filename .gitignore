@@ -164,3 +164,6 @@ data/
 *.log
 .vscode/
 ffmpeg.*
+
+requirements.in
+update-reqs.bat
