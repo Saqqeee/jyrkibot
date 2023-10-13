@@ -24,7 +24,7 @@ then
     # Create a virtual environment if one doesn't exist
     if [[ ! -d "/env " ]]
     then
-        python -m venv env
+        "${python_cmd}" -m venv env
     fi
 
     # Activate virtual environment and install pip-tools
