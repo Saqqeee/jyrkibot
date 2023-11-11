@@ -1,16 +1,19 @@
-import discord
-from sqlalchemy import select, func
-from sqlalchemy.orm import Session
 import json
-import asyncio
-import os
 import logging
+
+# import asyncio
+import os
 import subprocess
 import sys
-from jobs.tasks.cache_config import config
-from jobs.database import engine, Base, HuomentaResponses
+
 import alembic.command
+import discord
 from alembic.config import Config
+from sqlalchemy import select, func
+from sqlalchemy.orm import Session
+
+from jobs.database import engine, Base, HuomentaResponses
+from jobs.tasks.cache_config import config
 
 handler = logging.FileHandler(filename="loki.log", encoding="utf-8", mode="w")
 alembic_cfg = Config("alembic.ini")
@@ -28,7 +31,6 @@ if not os.path.exists("data/database.db"):
 # Run database migrations
 alembic.command.upgrade(alembic_cfg, "head")
 
-
 # Import additional modules only after the config and database are ready
 from slashcommands import (
     convert,
@@ -41,7 +43,7 @@ from slashcommands import (
     wiktionary,
     weather,
 )
-from responses import messages, voice, links
+from responses import messages, voice  # , links
 
 # If table HuomentaResponses is empty, populate it
 with Session(engine) as db:
@@ -151,7 +153,7 @@ async def shutdown(ctx: discord.Interaction):
 async def ping(ctx: discord.Interaction):
     """Test command for checking bot latency"""
     await ctx.response.send_message(
-        f"Pong! {round(client.latency*1000)} ms", ephemeral=True
+        f"Pong! {round(client.latency * 1000)} ms", ephemeral=True
     )
 
 
