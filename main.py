@@ -44,6 +44,7 @@ from slashcommands import (
     weather,
 )
 from responses import messages, voice  # , links
+import minigames
 
 # If table HuomentaResponses is empty, populate it
 with Session(engine) as db:
@@ -168,6 +169,7 @@ tree.add_command(utils.C7ck(client), guild=gld)
 tree.add_command(wiktionary.Wiktionary(client), guild=gld)
 tree.add_command(weather.Weather(), guild=gld)
 tree.add_command(convert.Convert(), guild=gld)
+tree.add_command(minigames.Game(), guild=gld)
 tree.add_command(utils.gpmems, guild=gld)
 tree.add_command(utils.timezone, guild=gld)
 tree.add_command(utils.addtochannel, guild=gld)
