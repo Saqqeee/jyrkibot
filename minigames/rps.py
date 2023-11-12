@@ -39,10 +39,11 @@ class Rps:
         msg1 = await self.ctx.followup.send(content="Pick one", view=p1c)
         msg2 = await ctx2.followup.send(content="Pick one", view=p2c, ephemeral=True)
 
-        p1timeout = await p1c.wait()
-        p2timeout = await p2c.wait()
         if p1timeout or p2timeout:
             return
+        p1to = await p1c.wait()
+        if not p2c.is_finished():
+            p2to = await p2c.wait()
 
         await msg1.delete()
         await msg2.delete()
