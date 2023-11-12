@@ -27,7 +27,7 @@ class Rps:
         timed_out = await button_view.wait()
         await response.edit(view=None)
         if timed_out:
-            self.ctx.followup.send(content="Kukaan ei vastannut pelipyyntöösi :(")
+            self.ctx.followup.send(content="No playmate found :(")
             return
 
         await self.game(button_view.ctx)
@@ -83,7 +83,7 @@ class Rps:
             self.choice: str | None = None
 
         def on_timeout(self):
-            self.ctx.channel.send(content=f"{self.ctx.user.name} on kalju")
+            self.ctx.channel.send(content=f"{self.ctx.user.name} is bald")
 
         class ChooseButton(discord.ui.Button):
             def __init__(self, choice: str):
