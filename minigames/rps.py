@@ -25,7 +25,7 @@ class Rps:
         )
 
         timed_out = await button_view.wait()
-        await response.delete()
+        await response.edit(view=None)
         if timed_out:
             self.ctx.followup.send(content="Kukaan ei vastannut pelipyyntöösi :(")
             return
