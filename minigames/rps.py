@@ -39,8 +39,6 @@ class Rps:
         msg1 = await self.ctx.followup.send(content="Pick one", view=p1c)
         msg2 = await ctx2.followup.send(content="Pick one", view=p2c, ephemeral=True)
 
-        if p1timeout or p2timeout:
-            return
         p1to = await p1c.wait()
         if not p2c.is_finished():
             p2to = await p2c.wait()
@@ -48,9 +46,10 @@ class Rps:
         await msg1.delete()
         await msg2.delete()
 
-        await self.ctx.channel.send(
-            f"{self.ctx.user.mention} {RPS_ICONS[p1c.choice]} - {RPS_ICONS[p2c.choice]} {ctx2.user.mention}"
-        )
+        if p1c.choice and p2c.choice:
+            await self.ctx.channel.send(
+                f"{self.ctx.user.mention} {RPS_ICONS[p1c.choice]} - {RPS_ICONS[p2c.choice]} {ctx2.user.mention}"
+            )
 
     class PlayView(discord.ui.View):
         def __init__(self):
