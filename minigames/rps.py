@@ -11,7 +11,6 @@ class Rps:
     def __init__(self, ctx: discord.Interaction):
         self.ctx = ctx
         self.player1 = self.ctx.user
-        self.invite_msg = None
 
     async def command(self):
         await self.ctx.response.defer(ephemeral=True, thinking=False)
