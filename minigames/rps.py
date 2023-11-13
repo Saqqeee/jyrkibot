@@ -11,6 +11,7 @@ class Rps:
     def __init__(self, ctx: discord.Interaction):
         self.ctx = ctx
         self.player1 = self.ctx.user
+        self.player2 = None
 
     async def command(self):
         await self.ctx.response.defer(ephemeral=True, thinking=False)
@@ -26,9 +27,13 @@ class Rps:
 
         timed_out = await button_view.wait()
         await response.edit(view=None)
+
         if timed_out:
             self.ctx.followup.send(content="No playmate found :(")
             return
+
+        self.player2 = button_view.ctx.user
+        await self.ctx.channel.send(content=f"{self.player2.name} agreed to play")
 
         await self.game(button_view.ctx)
 
