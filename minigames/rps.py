@@ -7,6 +7,35 @@ RPS_ICONS = {
 }
 
 
+class RpsItem:
+    def __init__(self, name):
+        self.name = name
+
+    def __eq__(self, other):
+        this = repr(self)
+        that = repr(other)
+        return this == that
+
+    def __gt__(self, other):
+        this = repr(self)
+        that = repr(other)
+        if (
+            (this == "rock" and that == "scissors")
+            or (this == "paper" and that == "rock")
+            or (this == "scissors" and that == "paper")
+        ):
+            return True
+        return False
+
+    def __lt__(self, other):
+        if self > other or self == other:
+            return False
+        return True
+
+    def __repr__(self):
+        return self.name
+
+
 class Rps:
     def __init__(self, ctx: discord.Interaction):
         self.ctx = ctx
@@ -15,13 +44,14 @@ class Rps:
 
     async def command(self):
         await self.ctx.response.defer(ephemeral=True, thinking=False)
-        await self.find_player()
+        winner = await self.find_player()
+        return self.player1, self.player2, winner
 
     async def find_player(self):
         button_view = PlayView(self)
 
         response = await self.ctx.channel.send(
-            content=f"{self.player1.name} wants to play Rock, Paper, Scissors",
+            content=f"{self.player1.display_name} wants to play Rock, Paper, Scissors",
             view=button_view,
         )
 
@@ -33,9 +63,11 @@ class Rps:
             return
 
         self.player2 = button_view.ctx.user
-        await self.ctx.channel.send(content=f"{self.player2.name} agreed to play")
+        await self.ctx.channel.send(
+            content=f"{self.player2.display_name} agreed to play"
+        )
 
-        await self.game(button_view.ctx)
+        return await self.game(button_view.ctx)
 
     async def game(self, ctx2: discord.Interaction):
         p1c = SelectView(self.ctx)
@@ -52,9 +84,26 @@ class Rps:
         await msg2.delete()
 
         if p1c.choice and p2c.choice:
+            winner = await self.result(p1c.choice, p2c.choice)
+            if winner:
+                win_str = f"{winner.display_name} wins!"
+            else:
+                win_str = "It's a tie!"
             await self.ctx.channel.send(
-                f"{self.ctx.user.mention} {RPS_ICONS[p1c.choice]} - {RPS_ICONS[p2c.choice]} {ctx2.user.mention}"
+                f"{self.ctx.user.mention} {RPS_ICONS[p1c.choice]} - {RPS_ICONS[p2c.choice]} {ctx2.user.mention}\n\n{win_str}"
             )
+
+            return winner
+        return None
+
+    async def result(self, choice1, choice2):
+        c1 = RpsItem(choice1)
+        c2 = RpsItem(choice2)
+        if c1 > c2:
+            return self.player1
+        if c2 > c1:
+            return self.player2
+        return "tie"
 
 
 class PlayView(discord.ui.View):
@@ -115,3 +164,21 @@ class SelectView(discord.ui.View):
                 content=f"You picked {self.choice} {RPS_ICONS[self.choice]}",
                 ephemeral=True,
             )
+
+
+# Tests
+if __name__ == "__main__":
+    rock = RpsItem("rock")
+    paper = RpsItem("paper")
+    scissors = RpsItem("scissors")
+    rock2 = RpsItem("rock")
+
+    print(rock > scissors)  # True
+    print(rock > paper)  # False
+    print(rock == rock)  # True
+    print(rock == rock2)  # True
+    print(rock == paper)  # False
+    print(rock < scissors)  # False
+    print(rock < paper)  # True
+    print(rock < rock)  # False
+    print(rock > rock)  # False
