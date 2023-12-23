@@ -81,7 +81,7 @@ async def on_ready():
 async def on_message(msg: discord.Message):
     if msg.author == client.user or msg.author.bot:
         return
-    if msg.content.lower() == "huomenta":
+    if msg.content.lower() in ["huomenta", "hyvää huomenta"]:
         await messages.goodmorning(msg)
     if msg.content.lower() in ["hyvää yötä", "öitä", "gn", "öt", "kauniita unia"]:
         await messages.goodnight(msg)
