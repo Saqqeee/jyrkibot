@@ -65,8 +65,8 @@ class Config:
         _defaults = {
             "rattimes": [11, 3],
             "huomentacooldown": 12,
-            "ultrararechance": 200,
-            "rarechance": 50,
+            "ultrararechance": 5,
+            "rarechance": 40,
             "lotterychannel": None,
             "basicincome": 10,
             "bet": 20,

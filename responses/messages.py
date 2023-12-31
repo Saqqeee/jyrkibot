@@ -49,16 +49,18 @@ async def goodmorning(msg: discord.Message):
     hour = datetime.now(pytz.timezone(tz)).hour
     aika = datetime.now()
 
-    # Check for ultra rares and regular rares
-    if random.randint(1, config.ultrararechance) == 1:
-        rarity = 2
-        rarenotif = ":star:" * 3
-        rat = 0
-        earn = 50 * config.basicincome
-    elif random.randint(1, config.rarechance) == 1:
-        rarity = 1
-        rarenotif = ":star:"
-        earn = 5 * config.basicincome
+    # Roll for rare response table
+    if random.randint(1, config.rarechance) == 1:
+        # Chance to continue and roll the ultra-rare table
+        if random.randint(1, config.ultrararechance) == 1:
+            rarity = 2
+            rarenotif = ":star:" * 3
+            rat = 0
+            earn = 50 * config.basicincome
+        else:
+            rarity = 1
+            rarenotif = ":star:"
+            earn = 5 * config.basicincome
     else:
         rarity = 0
         rarenotif = ""
