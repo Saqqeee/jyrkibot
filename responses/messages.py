@@ -161,7 +161,7 @@ async def goodmorning(msg: discord.Message):
         )
         db.commit()
 
-    await msg.channel.send(rarenotif + respmsg + rarenotif)
+    await msg.channel.send(f"{rarenotif} {respmsg} {rarenotif}")
 
 
 async def goodnight(msg: discord.Message):
