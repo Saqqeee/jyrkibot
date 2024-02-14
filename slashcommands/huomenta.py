@@ -38,14 +38,14 @@ class Huomenta(apc.Group):
         user: discord.Member = None,
         hidden: apc.Choice[int] = None,
     ):
-        if user == None:
+        if user is None:
             user = ctx.user
         embed = discord.Embed(
             title=f"Huomenta-tilastot käyttäjälle {user.display_name}:",
             color=discord.Color.dark_magenta(),
         )
 
-        hidden = False if hidden != None else True
+        hidden = False if hidden is not None else True
 
         # Fetch information from database for formatting the response
         with Session(engine) as db:
