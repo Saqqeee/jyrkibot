@@ -35,6 +35,7 @@ alembic.command.upgrade(alembic_cfg, "head")
 import slashcommands
 from responses import messages, voice  # , links
 import minigames
+import interactions
 
 # If table HuomentaResponses is empty, populate it
 with Session(engine) as db:
@@ -165,6 +166,8 @@ tree.add_command(slashcommands.timezone, guild=gld)
 tree.add_command(slashcommands.addtochannel, guild=gld)
 tree.add_command(slashcommands.addrole, guild=gld)
 tree.add_command(slashcommands.userroledel, guild=gld)
+
+tree.add_command(interactions.localtime, guild=gld)
 
 if __name__ == "__main__":
     client.run(config.token, log_handler=handler)
