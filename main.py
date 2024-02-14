@@ -32,17 +32,7 @@ if not os.path.exists("data/database.db"):
 alembic.command.upgrade(alembic_cfg, "head")
 
 # Import additional modules only after the config and database are ready
-from slashcommands import (
-    convert,
-    huomenta,
-    utils,
-    lottery,
-    drunk,
-    alarms,
-    tools,
-    wiktionary,
-    weather,
-)
+import slashcommands
 from responses import messages, voice  # , links
 import minigames
 
@@ -53,7 +43,7 @@ with Session(engine) as db:
     ).one()
     if responseamount == 0:
         with open("slashcommands/huomenta.json", "r", encoding="utf-8") as hfile:
-            huomenta.populatehuomenta(db, json.load(hfile))
+            slashcommands.populatehuomenta(db, json.load(hfile))
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -159,22 +149,22 @@ async def ping(ctx: discord.Interaction):
 
 
 # Add commands to command tree
-tree.add_command(huomenta.Huomenta(client), guild=gld)
-tree.add_command(lottery.Lottery(client), guild=gld)
-tree.add_command(drunk.Drunk(client), guild=gld)
-tree.add_command(utils.Request(client), guild=gld)
-tree.add_command(alarms.Alarm(client), guild=gld)
-tree.add_command(tools.Tools(client), guild=gld)
-tree.add_command(utils.C7ck(client), guild=gld)
-tree.add_command(wiktionary.Wiktionary(client), guild=gld)
-tree.add_command(weather.Weather(), guild=gld)
-tree.add_command(convert.Convert(), guild=gld)
+tree.add_command(slashcommands.Huomenta(client), guild=gld)
+tree.add_command(slashcommands.Lottery(client), guild=gld)
+tree.add_command(slashcommands.Drunk(client), guild=gld)
+tree.add_command(slashcommands.Request(client), guild=gld)
+tree.add_command(slashcommands.Alarm(client), guild=gld)
+tree.add_command(slashcommands.Tools(client), guild=gld)
+tree.add_command(slashcommands.C7ck(client), guild=gld)
+tree.add_command(slashcommands.Wiktionary(client), guild=gld)
+tree.add_command(slashcommands.Weather(), guild=gld)
+tree.add_command(slashcommands.Convert(), guild=gld)
 tree.add_command(minigames.Game(), guild=gld)
-tree.add_command(utils.gpmems, guild=gld)
-tree.add_command(utils.timezone, guild=gld)
-tree.add_command(utils.addtochannel, guild=gld)
-tree.add_command(utils.addrole, guild=gld)
-tree.add_command(utils.userroledel, guild=gld)
+tree.add_command(slashcommands.gpmems, guild=gld)
+tree.add_command(slashcommands.timezone, guild=gld)
+tree.add_command(slashcommands.addtochannel, guild=gld)
+tree.add_command(slashcommands.addrole, guild=gld)
+tree.add_command(slashcommands.userroledel, guild=gld)
 
 if __name__ == "__main__":
     client.run(config.token, log_handler=handler)
