@@ -33,7 +33,7 @@ alembic.command.upgrade(alembic_cfg, "head")
 
 # Import additional modules only after the config and database are ready
 import slashcommands
-from responses import messages, voice  # , links
+from responses import messages, voice, avif_to_jpg  # , links
 import minigames
 import interactions
 
@@ -76,6 +76,8 @@ async def on_message(msg: discord.Message):
         await messages.goodmorning(msg)
     if msg.content.lower() in ["hyvää yötä", "öitä", "gn", "öt", "kauniita unia"]:
         await messages.goodnight(msg)
+    if msg.attachments:
+        await avif_to_jpg.avif_to_jpg(msg)
     # await links.detracker(msg)
 
 
@@ -123,28 +125,28 @@ async def update(ctx: discord.Interaction):
     run a script that syncs the repo with origin and restarts the bot
     """
     if ctx.user.id == config.owner:
-        await ctx.response.send_message("Jyrki ottaa päikkärit", ephemeral=True)
+        await ctx.response().send_message("Jyrki ottaa päikkärit", ephemeral=True)
         subprocess.Popen("./update.sh")
         await client.close()
         sys.exit(0)
     else:
-        await ctx.response.send_message("Et voi tehdä noin!", ephemeral=True)
+        await ctx.response().send_message("Et voi tehdä noin!", ephemeral=True)
 
 
 @tree.command(name="shutdown", guild=gld)
 async def shutdown(ctx: discord.Interaction):
     if ctx.user.id == config.owner:
-        await ctx.response.send_message("Jyrki kuolee", ephemeral=True)
+        await ctx.response().send_message("Jyrki kuolee", ephemeral=True)
         await client.close()
         sys.exit(0)
     else:
-        await ctx.response.send_message("Et voi tehdä noin!", ephemeral=True)
+        await ctx.response().send_message("Et voi tehdä noin!", ephemeral=True)
 
 
 @tree.command(name="ping", description="Pelaa pöytätennistä Jyrkin kanssa!", guild=gld)
 async def ping(ctx: discord.Interaction):
     """Test command for checking bot latency"""
-    await ctx.response.send_message(
+    await ctx.response().send_message(
         f"Pong! {round(client.latency * 1000)} ms", ephemeral=True
     )
 
