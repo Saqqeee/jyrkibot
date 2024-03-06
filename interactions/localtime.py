@@ -19,4 +19,4 @@ async def localtime(ctx: discord.Interaction, member: discord.Member):
         time = datetime.now(tz=pytz.timezone(tz)).strftime("%H:%M on %A (UTC %z)")
         msg = f"Time for {member.display_name} in {tz}: {time}"
 
-    await ctx.response().send_message(content=msg, ephemeral=True)
+    await ctx.response.send_message(content=msg, ephemeral=True)

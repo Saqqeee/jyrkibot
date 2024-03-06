@@ -125,22 +125,22 @@ async def update(ctx: discord.Interaction):
     run a script that syncs the repo with origin and restarts the bot
     """
     if ctx.user.id == config.owner:
-        await ctx.response().send_message("Jyrki ottaa päikkärit", ephemeral=True)
+        await ctx.response.send_message("Jyrki ottaa päikkärit", ephemeral=True)
         subprocess.Popen("./update.sh")
         await client.close()
         sys.exit(0)
     else:
-        await ctx.response().send_message("Et voi tehdä noin!", ephemeral=True)
+        await ctx.response.send_message("Et voi tehdä noin!", ephemeral=True)
 
 
 @tree.command(name="shutdown", guild=gld)
 async def shutdown(ctx: discord.Interaction):
     if ctx.user.id == config.owner:
-        await ctx.response().send_message("Jyrki kuolee", ephemeral=True)
+        await ctx.response.send_message("Jyrki kuolee", ephemeral=True)
         await client.close()
         sys.exit(0)
     else:
-        await ctx.response().send_message("Et voi tehdä noin!", ephemeral=True)
+        await ctx.response.send_message("Et voi tehdä noin!", ephemeral=True)
 
 
 @tree.command(name="ping", description="Pelaa pöytätennistä Jyrkin kanssa!", guild=gld)
