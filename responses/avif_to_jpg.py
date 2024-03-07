@@ -16,14 +16,19 @@ async def avif_to_jpg(msg: discord.Message):
     jpg_files: list[discord.File] = []
 
     for attachment in msg.attachments:
-        if attachment.filename.lower().endswith(".avif"):
+        filename: str = attachment.filename.lower()
+        if filename.endswith(".avif"):
             image: bytes = await attachment.read()
             image_wrapped = io.BytesIO(image)
 
             image_converted: io.BytesIO = await convert(image_wrapped)
             image_converted.seek(0)
 
-            image_sendable = discord.File(image_converted, filename="untitled.jpg")
+            image_sendable = discord.File(
+                image_converted,
+                filename=filename.replace(".avif", ".jpg").replace("spoiler_", ""),
+                spoiler=attachment.is_spoiler(),
+            )
             jpg_files.append(image_sendable)
 
             image_converted.close()
